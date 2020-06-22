@@ -1,0 +1,81 @@
+object Form1: TForm1
+  Left = 380
+  Height = 240
+  Top = 250
+  Width = 633
+  Caption = 'Form1'
+  ClientHeight = 240
+  ClientWidth = 633
+  OnClose = FormClose
+  object btnStart: TButton
+    Left = 8
+    Height = 25
+    Top = 56
+    Width = 75
+    Caption = 'Start'
+    OnClick = btnStartClick
+    TabOrder = 0
+  end
+  object btnStop: TButton
+    Left = 96
+    Height = 25
+    Top = 56
+    Width = 75
+    Caption = 'Stop'
+    Enabled = False
+    OnClick = btnStopClick
+    TabOrder = 1
+  end
+  object Button1: TButton
+    Left = 16
+    Height = 25
+    Top = 185
+    Width = 75
+    Caption = 'Send'
+    OnClick = Button1Click
+    TabOrder = 2
+  end
+  object Edit1: TEdit
+    Left = 16
+    Height = 23
+    Top = 144
+    Width = 288
+    TabOrder = 3
+    Text = 'My message for all clients.'
+  end
+  object Edit2: TEdit
+    Left = 8
+    Height = 23
+    Top = 24
+    Width = 80
+    OnChange = Edit2Change
+    TabOrder = 4
+    Text = '8089'
+  end
+  object Label1: TLabel
+    Cursor = crHandPoint
+    Left = 99
+    Height = 15
+    Top = 32
+    Width = 160
+    Caption = 'Url for test ws://localhost:8089'
+    Font.Color = clBlue
+    Font.Style = [fsUnderline]
+    ParentColor = False
+    ParentFont = False
+    OnClick = Label1Click
+  end
+  object Memo1: TMemo
+    Left = 320
+    Height = 210
+    Top = 16
+    Width = 304
+    TabOrder = 5
+  end
+  object Timer1: TTimer
+    Interval = 10
+    OnTimer = Timer1Timer
+    left = 272
+    top = 104
+  end
+end
