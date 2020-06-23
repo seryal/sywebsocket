@@ -218,9 +218,8 @@ var
 begin
 
   sendstr := 'HTTP/1.1 101 Web Socket Protocol Handshake' + CRLF;
-  sendstr := sendstr + 'Server: GlassFish Server Open Source Edition  4.1.1' + CRLF;
-  sendstr := sendstr + 'X-Powered-By: X-Powered-By: Servlet/3.1 JSP/2.3 (GlassFish Server Open Source Edition  4.1.1  Java/Oracle Corporation/1.8)'
-    + CRLF;
+  sendstr := sendstr + 'Server: syWebsocket Server' + CRLF;
+  sendstr := sendstr + 'X-Powered-By: syWebSocket Server' + CRLF;
   sendstr := sendstr + 'Connection: Upgrade' + CRLF;
 
 

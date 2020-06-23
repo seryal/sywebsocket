@@ -168,34 +168,40 @@ begin
     begin
       Result[offset] := 126;
       Inc(Offset);
-      Result[offset] := strlen and $ff;
-      Inc(Offset);
       Result[offset] := (strlen and $ff00) shr 8;
+      Inc(Offset);
+      Result[offset] := strlen and $ff;
       Inc(offset);
     end;
     3:     // ????
     begin
-      Result[1] := 127;
-      Result[2] := strlen and $ff;
-      Result[3] := (strlen and $ff00) shr 8;
-      Result[4] := (strlen and $ff0000) shr 16;
-      Result[5] := (strlen and $ff000000) shr 24;
-      Result[6] := (strlen and $ff00000000) shr 32;
-      Result[7] := (strlen and $ff0000000000) shr 40;
-      Result[8] := (strlen and $ff000000000000) shr 48;
-      Result[9] := (strlen and $ff00000000000000) shr 56;
+      Result[offset] := 127;
+      Inc(offset);
+      Result[offset] := (strlen and $ff00000000000000) shr 56;
+      Inc(offset);
+      Result[offset] := (strlen and $ff000000000000) shr 48;
+      Inc(offset);
+      Result[offset] := (strlen and $ff0000000000) shr 40;
+      Inc(offset);
+      Result[offset] := (strlen and $ff00000000) shr 32;
+      Inc(offset);
+      Result[offset] := (strlen and $ff000000) shr 24;
+      Inc(offset);
+      Result[offset] := (strlen and $ff0000) shr 16;
+      Inc(offset);
+      Result[offset] := (strlen and $ff00) shr 8;
+      Inc(offset);
+      Result[offset] := strlen and $ff;
+      Inc(offset);
     end;
   end;
   move(utfstr[1], Result[offset], strlen);
   Result[offset + strlen] := 0;
   utfstr := '';
-  /// move message to array
-
 end;
 
 procedure TBaseFrame.SetMessage(AValue: string);
 begin
-  // формируем кусок данных для отправки в сервер
   FMessageStr := AValue;
 end;
 
