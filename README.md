@@ -12,7 +12,7 @@ Installed openssl, and have also copied the two dll's (libeay32.dll and libssl32
 sudo apt-get install openssl libssl-dev
 
 ## Example
-
+```pascal
 var
   FWebSocket := TsyWebSocketServer;  
 
@@ -39,6 +39,7 @@ begin
     end;
   end;
 end;   
+```
 
 Page for test https://www.websocket.org/echo.html
 
