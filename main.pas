@@ -20,16 +20,15 @@ type
     Edit2: TEdit;
     Label1: TLabel;
     Memo1: TMemo;
-    Timer1: TTimer;
     procedure btnStartClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure Label1Click(Sender: TObject);
-    procedure Timer1Timer(Sender: TObject);
   private
     FWebSocket: TsyWebSocketServer;
+    procedure OnTextMessage(Sender: TObject);
   public
 
   end;
@@ -46,6 +45,8 @@ implementation
 procedure TForm1.btnStartClick(Sender: TObject);
 begin
   FWebSocket := TsyWebSocketServer.Create(StrToInt(Edit2.Text));
+  // Event notifying that there are messages in the queue
+  FWebSocket.OnTextMessage := @OnTextMessage;
   FWebSocket.Start;
   btnStart.Enabled := False;
   btnStop.Enabled := True;
@@ -94,10 +95,12 @@ begin
   OpenURL('https://www.websocket.org/echo.html');
 end;
 
-procedure TForm1.Timer1Timer(Sender: TObject);
+
+procedure TForm1.OnTextMessage(Sender: TObject);
 var
   val: TMessageRecord;
 begin
+  //
   if not Assigned(FWebSocket) then
     exit;
   if FWebSocket.MessageQueue.TotalItemsPushed = FWebSocket.MessageQueue.TotalItemsPopped then
@@ -107,9 +110,11 @@ begin
     FWebSocket.MessageQueue.PopItemTimeout(val, 100);
     if val.Opcode = optText then
     begin
-      Memo1.Lines.Add(inttostr(TsyConnectedClient(val.Sender).Tag) + ': ' + val.Message);
+      Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': ' + val.Message);
     end;
   end;
+  // Verifying that the main thread does not stop the worker thread
+  // sleep(5000);
 end;
 
 end.

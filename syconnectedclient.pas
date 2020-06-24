@@ -13,8 +13,8 @@ const
 
 type
 
-  TOnTextMessage = procedure(Sender: TObject; Message: string) of object;
-  TOnCloseConnect = procedure(Sender: TObject; Reason: integer; Message: string) of object;
+  TOnClientTextMessage = procedure(Sender: TObject; Message: string) of object;
+  TOnClientCloseConnect = procedure(Sender: TObject; Reason: integer; Message: string) of object;
 
 
   { TsyConnectedClient }
@@ -26,8 +26,8 @@ type
     FSock: TTCPBlockSocket;
     FWebSocket: boolean;
     FHandShake: boolean;
-    FOnTextMessage: TOnTextMessage;
-    FOnClose: TOnCloseConnect;
+    FOnClientTextMessage: TOnClientTextMessage;
+    FOnClientClose: TOnClientCloseConnect;
     FTag: integer;
     function MyEncodeBase64(sha1: TSHA1Digest): string;
     procedure Execute; override;
@@ -46,8 +46,8 @@ type
     procedure SendCloseFrame(AReason: integer; AMessage: string);
     procedure SendMessageFrame(AMessage: string);
 
-    property OnTextMessage: TOnTextMessage read FOnTextMessage write FOnTextMessage;
-    property OnClose: TOnCloseConnect read FOnClose write FOnClose;
+    property OnClientTextMessage: TOnClientTextMessage read FOnClientTextMessage write FOnClientTextMessage;
+    property OnClientClose: TOnClientCloseConnect read FOnClientClose write FOnClientClose;
     property Tag: integer read FTag write FTag;
   end;
 
@@ -162,13 +162,13 @@ begin
     try
       BaseFrame.Parse(Buffer, Len);
       case BaseFrame.Opcode of
-        optText: // if Text then send OnTextMessage event to parent Thread about new Text message;
-          if Assigned(OnTextMessage) then
-            OnTextMessage(Self, BaseFrame.MessageStr);
+        optText: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
+          if Assigned(OnClientTextMessage) then
+            OnClientTextMessage(Self, BaseFrame.MessageStr);
         optCloseConnect: // if Close send OnCloseMessage to parent Thread about Close message
         begin
-          if Assigned(OnClose) then
-            OnClose(Self, BaseFrame.Reason, BaseFrame.MessageStr);
+          if Assigned(OnClientClose) then
+            OnClientClose(Self, BaseFrame.Reason, BaseFrame.MessageStr);
         end;
       end;
     finally

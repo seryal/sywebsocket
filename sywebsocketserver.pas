@@ -9,7 +9,7 @@ uses
 
 type
 
-
+  TOnTextMessage = procedure(Sender: TObject) of object;
 
   TLockedClientList = class(specialize TThreadList<TsyConnectedClient>);
   TClientList = specialize TList<TsyConnectedClient>;
@@ -33,13 +33,17 @@ type
     FLockedClientList: TLockedClientList;
     // Messages from client
     FMessageQueue: TMessageQueue;
-    procedure OnClose(Sender: TObject; Reason: integer; Message: string);
-    procedure OnTextMessage(Sender: TObject; Message: string);
+    FOnTextMessage: TOnTextMessage;
+    procedure OnClientClose(Sender: TObject; Reason: integer; Message: string);
+    procedure OnClientTextMessage(Sender: TObject; Message: string);
     procedure OnTerminate(Sender: TObject);
+
+    procedure TextMessageNotify;
   public
     constructor Create(APort: integer);
     destructor Destroy; override;
     procedure Execute; override;
+    property OnTextMessage: TOnTextMessage read FOnTextMessage write FOnTextMessage;
     property MessageQueue: TMessageQueue read FMessageQueue;
     property LockedClientList: TLockedClientList read FLockedClientList;
   end;
@@ -65,7 +69,15 @@ begin
   end;
 end;
 
-procedure TsyWebSocketServer.OnTextMessage(Sender: TObject; Message: string);
+procedure TsyWebSocketServer.TextMessageNotify;
+begin
+  if Terminated then
+    exit;
+  if Assigned(OnTextMessage) then
+    OnTextMessage(self);
+end;
+
+procedure TsyWebSocketServer.OnClientTextMessage(Sender: TObject; Message: string);
 var
   MsgRec: TMessageRecord;
 begin
@@ -77,10 +89,13 @@ begin
   MsgRec.Opcode := optText;
   MsgRec.Reason := 0;
   FMessageQueue.PushItem(MsgRec);
+
   // send event to MainProgram about new Text Message
+  // The client must read the data from the queue FMessageQueue;
+  Queue(@TextMessageNotify);
 end;
 
-procedure TsyWebSocketServer.OnClose(Sender: TObject; Reason: integer; Message: string);
+procedure TsyWebSocketServer.OnClientClose(Sender: TObject; Reason: integer; Message: string);
 var
   MsgRec: TMessageRecord;
 begin
@@ -153,8 +168,8 @@ begin
         // create client thread
         Client := TsyConnectedClient.Create(ClientSock);
         Client.OnTerminate := @OnTerminate;
-        Client.OnTextMessage := @OnTextMessage;
-        Client.OnClose := @OnClose;
+        Client.OnClientTextMessage := @OnClientTextMessage;
+        Client.OnClientClose := @OnClientClose;
         Client.Tag := FClientCount;
         Inc(FClientCount);
         FLockedClientList.Add(Client);
