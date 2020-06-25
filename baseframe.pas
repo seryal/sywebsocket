@@ -41,12 +41,22 @@ type
     FPayloadLen16: word;
     FPayloadLen64: int64;
     FReason: integer;
-    FPacketLen: integer;
     FSendData: Pointer;
+
+    // флаг о том что это продолжение входного буфера
+    FContinueBuffer: boolean;
+    FPacketLen: integer;
+    FBufferArray: TDynamicByteArray;
+    FIncomSize: integer;
+
+    function getReady: boolean;
     function GetSendData: TDynamicByteArray;
     function GetMessage: string;
     function GetPayloadLen: int64;
     procedure SetMessage(AValue: string);
+
+    function GetWebSocketPacketSize(ABuffer: Pointer; Alen: integer): int64;
+
   public
     Fin: boolean;
     Rsv1: boolean;
@@ -55,11 +65,13 @@ type
     Opcode: TOpcodeType;
     Mask: boolean;
     MaskingKey: longword;
+    constructor Create;
     procedure Parse(AMemory: Pointer; Len: integer);
     property PayloadLen: int64 read GetPayloadLen;
     property MessageStr: string read FMessageStr write SetMessage;
     property Reason: integer read FReason write FReason;
     property SendData: TDynamicByteArray read GetSendData;
+    property Ready: boolean read getReady;
     //    property PacketLen: Integer read GetPacke
   end;
 
@@ -116,6 +128,12 @@ end;
 function TBaseFrame.GetPayloadLen: int64;
 begin
   Result := FPayloadLen7;
+  case FPayloadLen7 of
+    126:
+      Result := FPayloadLen16;
+    127:
+      Result := FPayloadLen64;
+  end;
 end;
 
 function TBaseFrame.GetMessage: string;
@@ -142,7 +160,7 @@ begin
   case plen of
     2: ptype := 1;
     4: ptype := 2;
-    8: ptype := 3;
+    10: ptype := 3;
   end;
 
   plen := plen + Length(utfstr);
@@ -195,14 +213,67 @@ begin
       Inc(offset);
     end;
   end;
-  move(utfstr[1], Result[offset], strlen);
+  if strlen > 0 then
+  begin
+    move(utfstr[1], Result[offset], strlen);
+  end;
   Result[offset + strlen] := 0;
   utfstr := '';
+end;
+
+function TBaseFrame.getReady: boolean;
+begin
+  Result := not FContinueBuffer;
 end;
 
 procedure TBaseFrame.SetMessage(AValue: string);
 begin
   FMessageStr := AValue;
+end;
+
+function TBaseFrame.GetWebSocketPacketSize(ABuffer: Pointer; Alen: integer): int64;
+type
+  SmallArray = array[0..9] of byte;
+var
+  Buffer: ^SmallArray;
+  HeaderCount: integer;
+  _mask: boolean;
+begin
+  Result := 0;
+  Buffer := @ABuffer^;
+  HeaderCount := 2;
+  _Mask := (Buffer^[1] and 128) = 128;
+  FPayloadLen7 := Buffer^[1] and %1111111;
+  FPayloadLen16 := 0;
+  FPayloadLen64 := 0;
+  case FPayloadLen7 of
+    126:
+    begin
+      FPayloadLen16 := Buffer^[2] shl 8;
+      FPayloadLen16 := FPayloadLen16 or Buffer^[3];
+      HeaderCount := 4;
+    end;
+    127:
+    begin
+      FPayloadLen64 := Buffer^[2] shl 56;
+      FPayloadLen64 := FPayloadLen64 or (Buffer^[3] shl 48);
+      FPayloadLen64 := FPayloadLen64 or (Buffer^[4] shl 40);
+      FPayloadLen64 := FPayloadLen64 or (Buffer^[5] shl 32);
+      FPayloadLen64 := FPayloadLen64 or (Buffer^[6] shl 24);
+      FPayloadLen64 := FPayloadLen64 or (Buffer^[7] shl 16);
+      FPayloadLen64 := FPayloadLen64 or (Buffer^[8] shl 8);
+      FPayloadLen64 := FPayloadLen64 or Buffer^[9];
+      HeaderCount := 10;
+    end;
+  end;
+  if _mask then
+    HeaderCount := HeaderCount + 4;
+  Result := PayloadLen + HeaderCount;
+end;
+
+constructor TBaseFrame.Create;
+begin
+  FContinueBuffer := False;
 end;
 
 procedure TBaseFrame.Parse(AMemory: Pointer; Len: integer);
@@ -211,66 +282,68 @@ var
   offset: byte;
   Message: TPayloadText;
 begin
-  FMessageStr := '';
-  New(Data);
-  SetLength(Data^, Len);
-  Data^ := AMemory;
-  offset := 0;
-  fin := (Data^[offset] and 128) = 128;
-  OPCode := TOpcodeType(Data^[offset] and %1111);
-  Inc(offset); //1
-  Mask := (Data^[offset] and 128) = 128;
-  FPayloadLen7 := Data^[offset] and %1111111;
-  Inc(offset);    //2
-  if FPayloadLen7 = 126 then
+
+  if not FContinueBuffer then
   begin
-    FPayloadLen16 := Data^[offset] shl 8;
-    Inc(offset);     //3
-    FPayloadLen16 := FPayloadLen16 or Data^[offset];
-    Inc(offset);     //4
+    // calculate full size of websocketbuffer.
+    FPacketLen := GetWebSocketPacketSize(AMemory, Len);
+    FContinueBuffer := True;
+    FIncomSize := 0;
+    if FPacketLen = Len then
+      FContinueBuffer := False;
+    Setlength(FBufferArray, FPacketLen);
   end;
-  if FPayloadLen7 = 127 then
+  new(Data);
+  Data^ := AMemory;
+  Move(Data^[0], FBufferArray[FIncomSize], Len);
+  dispose(Data);
+  FIncomSize := FIncomSize + Len;
+  if FIncomSize = FPacketLen then
+    FContinueBuffer := False;
+  if FContinueBuffer then
+    exit;
+
+
+  FMessageStr := '';
+  offset := 0;
+  fin := (FBufferArray[offset] and 128) = 128;
+  OPCode := TOpcodeType(FBufferArray[offset] and %1111);
+  Inc(offset); //1
+  Mask := (FBufferArray[offset] and 128) = 128;
+  FPayloadLen7 := FBufferArray[offset] and %1111111;
+  Inc(offset);    //2
+
+  if FPayloadLen7 = 126 then                  // change to Move
   begin
-    FPayloadLen64 := Data^[offset] shl 56;
-    Inc(offset);        //3
-    FPayloadLen64 := FPayloadLen64 or (Data^[offset] shl 48);
-    Inc(offset);           //4
-    FPayloadLen64 := FPayloadLen64 or (Data^[offset] shl 40);
-    Inc(offset);           //5
-    FPayloadLen64 := FPayloadLen64 or (Data^[offset] shl 32);
-    Inc(offset);           //6
-    FPayloadLen64 := FPayloadLen64 or (Data^[offset] shl 24);
-    Inc(offset);           //7
-    FPayloadLen64 := FPayloadLen64 or (Data^[offset] shl 16);
-    Inc(offset);           //8
-    FPayloadLen64 := FPayloadLen64 or (Data^[offset] shl 8);
-    Inc(offset);           //9
-    FPayloadLen64 := FPayloadLen64 or Data^[offset];
-    Inc(offset);
+    Inc(offset, 2);     //3
+  end;
+  if FPayloadLen7 = 127 then   // change to Move
+  begin
+    Inc(offset, 8);        //3
   end;
 
   if Mask then
   begin
-    MaskingKey := Data^[offset];
+    MaskingKey := FBufferArray[offset];
     Inc(offset);
-    MaskingKey := MaskingKey or (Data^[offset] shl 8);
+    MaskingKey := MaskingKey or (FBufferArray[offset] shl 8);
     Inc(offset);
-    MaskingKey := MaskingKey or (Data^[offset] shl 16);
+    MaskingKey := MaskingKey or (FBufferArray[offset] shl 16);
     Inc(offset);
-    MaskingKey := MaskingKey or Data^[offset] shl 24;
+    MaskingKey := MaskingKey or (FBufferArray[offset] shl 24);
     Inc(offset);
   end;
   case Opcode of
     optContinue: ;
     optText:
     begin
-      Message.LoadMessage(Data^, offset, PayloadLen, MaskingKey);
+      Message.LoadMessage(FBufferArray, offset, PayloadLen, MaskingKey);
       FMessageStr := Message.MessageStr;
     end;
     optBinary: ;
     optCloseConnect:
     begin
-      Message.LoadMessage(Data^, offset, PayloadLen, MaskingKey);
+      Message.LoadMessage(FBufferArray, offset, PayloadLen, MaskingKey);
       { TODO : Dirty hack. FIX THIS }
       begin
         if Message.MessageStr <> '' then
@@ -288,7 +361,6 @@ begin
     optPong: ;
   end;
 
-  Dispose(Data);
 end;
 
 { THTTPRecord }

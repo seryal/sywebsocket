@@ -28,6 +28,7 @@ type
     procedure Label1Click(Sender: TObject);
   private
     FWebSocket: TsyWebSocketServer;
+    procedure OnCloseConnection(Sender: TObject);
     procedure OnTextMessage(Sender: TObject);
   public
 
@@ -47,6 +48,7 @@ begin
   FWebSocket := TsyWebSocketServer.Create(StrToInt(Edit2.Text));
   // Event notifying that there are messages in the queue
   FWebSocket.OnTextMessage := @OnTextMessage;
+  FWebSocket.OnCloseConnection := @OnCloseConnection;
   FWebSocket.Start;
   btnStart.Enabled := False;
   btnStop.Enabled := True;
@@ -100,7 +102,7 @@ procedure TForm1.OnTextMessage(Sender: TObject);
 var
   val: TMessageRecord;
 begin
-  //
+
   if not Assigned(FWebSocket) then
     exit;
   if FWebSocket.MessageQueue.TotalItemsPushed = FWebSocket.MessageQueue.TotalItemsPopped then
@@ -110,11 +112,31 @@ begin
     FWebSocket.MessageQueue.PopItemTimeout(val, 100);
     if val.Opcode = optText then
     begin
+      TsyConnectedClient(val.Sender).SendMessageFrame(val.Message);
       Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': ' + val.Message);
     end;
   end;
   // Verifying that the main thread does not stop the worker thread
   // sleep(5000);
+end;
+
+procedure TForm1.OnCloseConnection(Sender: TObject);
+var
+  val: TMessageRecord;
+begin
+  if not Assigned(FWebSocket) then
+    exit;
+  if FWebSocket.MessageQueue.TotalItemsPushed = FWebSocket.MessageQueue.TotalItemsPopped then
+    exit;
+  while FWebSocket.MessageQueue.TotalItemsPushed <> FWebSocket.MessageQueue.TotalItemsPopped do
+  begin
+    FWebSocket.MessageQueue.PopItemTimeout(val, 100);
+    if val.Opcode = optCloseConnect then
+    begin
+      Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': ' + val.Message);
+    end;
+  end;
+
 end;
 
 end.

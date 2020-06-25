@@ -29,6 +29,9 @@ type
     FOnClientTextMessage: TOnClientTextMessage;
     FOnClientClose: TOnClientCloseConnect;
     FTag: integer;
+    FCookie: string;
+    FBaseFrame: TBaseFrame;
+
     function MyEncodeBase64(sha1: TSHA1Digest): string;
     procedure Execute; override;
     procedure OnMonitor(Sender: TObject; Writing: boolean; const Buffer: TMemory; Len: integer);
@@ -55,6 +58,7 @@ implementation
 
 
 { TsyConnectedClient }
+
 
 function TsyConnectedClient.MyEncodeBase64(sha1: TSHA1Digest): string;
 var
@@ -132,6 +136,7 @@ begin
           SendHandShake(GetWebSocketKey(Header));
           FHandShake := True;
         end;
+
         // Handshake with client
         syLog.Info('WebSocket Connection');
       end
@@ -151,29 +156,33 @@ begin
 end;
 
 procedure TsyConnectedClient.OnMonitor(Sender: TObject; Writing: boolean; const Buffer: TMemory; Len: integer);
-var
-  BaseFrame: TBaseFrame;
 begin
   if FHandShake then
   begin
+    if Terminated then
+      exit;
     if Writing then
       exit;
-    BaseFrame := TBaseFrame.Create;
+
+    // Необходимо вычислить полную длину приходящего пакета
+    syLog.Info('OnMonitor: ' + IntToStr(FSock.LastError));
+
     try
-      BaseFrame.Parse(Buffer, Len);
-      case BaseFrame.Opcode of
-        optText: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
-          if Assigned(OnClientTextMessage) then
-            OnClientTextMessage(Self, BaseFrame.MessageStr);
-        optCloseConnect: // if Close send OnCloseMessage to parent Thread about Close message
-        begin
-          if Assigned(OnClientClose) then
-            OnClientClose(Self, BaseFrame.Reason, BaseFrame.MessageStr);
+      FBaseFrame.Parse(Buffer, Len);
+      if FBaseFrame.Ready then
+        case FBaseFrame.Opcode of
+          optText: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
+            if Assigned(OnClientTextMessage) then
+              OnClientTextMessage(Self, FBaseFrame.MessageStr);
+          optCloseConnect: // if Close send OnClientClose to parent Thread about Close connection
+          begin
+            if Assigned(OnClientClose) then
+              OnClientClose(Self, FBaseFrame.Reason, FBaseFrame.MessageStr);
+          end;
         end;
-      end;
-    finally
-      FreeAndNil(BaseFrame);
+    except
     end;
+
   end;
 end;
 
@@ -188,7 +197,7 @@ begin
   begin
     headerValue := s;
     headerKey := Fetch(headerValue, ':');
-    if (headerKey = 'Upgrade') and (headerValue = 'websocket') then
+    if (LowerCase(headerKey) = 'upgrade') and (LowerCase(headerValue) = 'websocket') then
     begin
       Result := True;
       Exit;
@@ -258,13 +267,14 @@ begin
   FSock := TTCPBlockSocket.Create;
   FSock.Socket := hSock;
   FreeOnTerminate := True;
-
+  FBaseFrame := TBaseFrame.Create;
   inherited Create(True);
 end;
 
 destructor TsyConnectedClient.Destroy;
 begin
   FreeAndNil(FSock);
+  FreeAndNil(FBaseFrame);
   RTLeventdestroy(FTerminateEvent);
   DoneCriticalsection(FCritSection);
   inherited Destroy;
@@ -313,7 +323,7 @@ var
 begin
   EnterCriticalsection(FCritSection);
   try
-
+    len := Length(AMessage);
     BaseFrame := TBaseFrame.Create;
     try
       BaseFrame.Fin := True;
@@ -355,7 +365,7 @@ begin
     HR_Accept:
       syLog.Info('HR_Accept');
     HR_ReadCount:
-      syLog.Info('HR_ReadCount');
+      syLog.Info('HR_ReadCount ' + Value);
     HR_WriteCount:
       syLog.Info('HR_WriteCount');
     HR_Wait:
@@ -367,6 +377,7 @@ end;
 
 
 end.
+
 
 
 

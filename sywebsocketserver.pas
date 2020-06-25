@@ -9,8 +9,6 @@ uses
 
 type
 
-  TOnTextMessage = procedure(Sender: TObject) of object;
-
   TLockedClientList = class(specialize TThreadList<TsyConnectedClient>);
   TClientList = specialize TList<TsyConnectedClient>;
 
@@ -33,17 +31,20 @@ type
     FLockedClientList: TLockedClientList;
     // Messages from client
     FMessageQueue: TMessageQueue;
-    FOnTextMessage: TOnTextMessage;
+    FOnTextMessage: TNotifyEvent;
+    FOnCloseConnection: TNotifyEvent;
     procedure OnClientClose(Sender: TObject; Reason: integer; Message: string);
     procedure OnClientTextMessage(Sender: TObject; Message: string);
     procedure OnTerminate(Sender: TObject);
 
     procedure TextMessageNotify;
+    procedure CloseConnectionNotify;
   public
     constructor Create(APort: integer);
     destructor Destroy; override;
     procedure Execute; override;
-    property OnTextMessage: TOnTextMessage read FOnTextMessage write FOnTextMessage;
+    property OnTextMessage: TNotifyEvent read FOnTextMessage write FOnTextMessage;
+    property OnCloseConnection: TNotifyEvent read FOnCloseConnection write FOnCloseConnection;
     property MessageQueue: TMessageQueue read FMessageQueue;
     property LockedClientList: TLockedClientList read FLockedClientList;
   end;
@@ -75,6 +76,14 @@ begin
     exit;
   if Assigned(OnTextMessage) then
     OnTextMessage(self);
+end;
+
+procedure TsyWebSocketServer.CloseConnectionNotify;
+begin
+  if Terminated then
+    exit;
+  if Assigned(OnCloseConnection) then
+    OnCloseConnection(self);
 end;
 
 procedure TsyWebSocketServer.OnClientTextMessage(Sender: TObject; Message: string);
@@ -110,6 +119,7 @@ begin
   FMessageQueue.PushItem(MsgRec);
   TsyConnectedClient(Sender).SendCloseFrame(3001, 'Bye');
   TsyConnectedClient(Sender).TerminateThread;
+  Queue(@CloseConnectionNotify);
 end;
 
 constructor TsyWebSocketServer.Create(APort: integer);

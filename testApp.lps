@@ -4,13 +4,14 @@
     <PathDelim Value="\"/>
     <Version Value="11"/>
     <BuildModes Active="Debug"/>
-    <Units Count="17">
+    <Units Count="18">
       <Unit0>
         <Filename Value="testApp.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos Y="16"/>
-        <UsageCount Value="90"/>
+        <EditorIndex Value="2"/>
+        <CursorPos X="83" Y="13"/>
+        <UsageCount Value="104"/>
+        <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="main.pas"/>
@@ -18,10 +19,9 @@
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
-        <TopLine Value="40"/>
-        <CursorPos X="31" Y="50"/>
-        <UsageCount Value="90"/>
+        <TopLine Value="101"/>
+        <CursorPos X="42" Y="114"/>
+        <UsageCount Value="104"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -29,70 +29,71 @@
         <Filename Value="sywebsocketserver.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="syWebSocketServer"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="19"/>
-        <CursorPos X="23" Y="28"/>
-        <UsageCount Value="90"/>
-        <Loaded Value="True"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="7" Y="86"/>
+        <UsageCount Value="104"/>
+        <Bookmarks Count="2">
+          <Item0 X="15" Y="41" ID="2"/>
+          <Item1 X="7" Y="86" ID="1"/>
+        </Bookmarks>
       </Unit2>
       <Unit3>
         <Filename Value="syconnectedclient.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="2"/>
-        <TopLine Value="29"/>
-        <CursorPos X="19" Y="50"/>
-        <UsageCount Value="90"/>
-        <Bookmarks Count="1">
-          <Item0 X="3" Y="332" ID="1"/>
-        </Bookmarks>
+        <EditorIndex Value="1"/>
+        <TopLine Value="312"/>
+        <CursorPos Y="327"/>
+        <UsageCount Value="104"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="baseframe.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="184"/>
-        <CursorPos Y="205"/>
-        <UsageCount Value="38"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="141"/>
+        <CursorPos Y="152"/>
+        <UsageCount Value="52"/>
         <Bookmarks Count="2">
-          <Item0 Y="211" ID="3"/>
-          <Item1 Y="128" ID="2"/>
+          <Item0 Y="282" ID="3"/>
+          <Item1 Y="252" ID="1"/>
         </Bookmarks>
+        <Loaded Value="True"/>
       </Unit4>
       <Unit5>
         <Filename Value="C:\Users\yus\AppData\Local\lazarus\onlinepackagemanager\packages\synapse40.1\blcksock.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="2028"/>
-        <CursorPos Y="2043"/>
-        <UsageCount Value="21"/>
+        <TopLine Value="789"/>
+        <CursorPos X="14" Y="803"/>
+        <UsageCount Value="23"/>
       </Unit5>
       <Unit6>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\classes\classesh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1703"/>
         <CursorPos X="14" Y="1717"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="7"/>
       </Unit6>
       <Unit7>
         <Filename Value="sylogevent.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="74"/>
         <CursorPos Y="93"/>
-        <UsageCount Value="12"/>
+        <UsageCount Value="10"/>
       </Unit7>
       <Unit8>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\fgl.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="129"/>
         <CursorPos X="16" Y="158"/>
-        <UsageCount Value="4"/>
+        <UsageCount Value="2"/>
       </Unit8>
       <Unit9>
         <Filename Value="C:\lazarus\components\sparta\generics\sparta_generics.pas"/>
         <UnitName Value="sparta_Generics"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="19" Y="9"/>
-        <UsageCount Value="5"/>
+        <UsageCount Value="3"/>
       </Unit9>
       <Unit10>
         <Filename Value="C:\lazarus\components\sparta\generics\source\generics.collections.pas"/>
@@ -100,34 +101,34 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="313"/>
         <CursorPos X="13" Y="350"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="7"/>
       </Unit10>
       <Unit11>
         <Filename Value="C:\lazarus\lcl\include\control.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2896"/>
         <CursorPos Y="2913"/>
-        <UsageCount Value="5"/>
+        <UsageCount Value="3"/>
       </Unit11>
       <Unit12>
         <Filename Value="C:\lazarus\lcl\include\buttoncontrol.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="4"/>
         <CursorPos Y="22"/>
-        <UsageCount Value="5"/>
+        <UsageCount Value="3"/>
       </Unit12>
       <Unit13>
         <Filename Value="C:\lazarus\lcl\include\buttons.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="152"/>
         <CursorPos Y="170"/>
-        <UsageCount Value="5"/>
+        <UsageCount Value="3"/>
       </Unit13>
       <Unit14>
         <Filename Value="C:\Users\yus\AppData\Local\lazarus\onlinepackagemanager\packages\synapse40.1\sswin32.inc"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="3" Y="323"/>
-        <UsageCount Value="19"/>
+        <UsageCount Value="17"/>
       </Unit14>
       <Unit15>
         <Filename Value="C:\lazarus\components\lazutils\lazcollections.pas"/>
@@ -135,139 +136,146 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="46"/>
         <CursorPos X="14" Y="61"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="8"/>
       </Unit15>
       <Unit16>
         <Filename Value="C:\Users\yus\AppData\Local\lazarus\onlinepackagemanager\packages\synapse40.1\synautil.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1448"/>
-        <CursorPos X="15" Y="1466"/>
-        <UsageCount Value="9"/>
+        <TopLine Value="1799"/>
+        <CursorPos Y="1814"/>
+        <UsageCount Value="10"/>
       </Unit16>
+      <Unit17>
+        <Filename Value="C:\lazarus\lcl\interfaces\win32\win32callback.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1738"/>
+        <CursorPos X="24" Y="1814"/>
+        <UsageCount Value="10"/>
+      </Unit17>
     </Units>
     <OtherDefines Count="1">
       <Define0 Value="DEBUG"/>
     </OtherDefines>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="main.pas"/>
-        <Caret Line="18" Column="16"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="157" TopLine="142"/>
       </Position1>
       <Position2>
-        <Filename Value="main.pas"/>
-        <Caret Line="9" Column="3"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="158" Column="88" TopLine="142"/>
       </Position2>
       <Position3>
-        <Filename Value="main.pas"/>
-        <Caret Line="84" Column="28" TopLine="76"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="152" TopLine="139"/>
       </Position3>
       <Position4>
-        <Filename Value="main.pas"/>
-        <Caret Line="91" Column="28" TopLine="78"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="153" TopLine="139"/>
       </Position4>
       <Position5>
-        <Filename Value="main.pas"/>
-        <Caret Line="48" Column="65" TopLine="36"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="154" TopLine="139"/>
       </Position5>
       <Position6>
-        <Filename Value="main.pas"/>
-        <Caret Line="109" Column="34" TopLine="83"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="155" TopLine="139"/>
       </Position6>
       <Position7>
-        <Filename Value="main.pas"/>
-        <Caret Line="108" Column="23" TopLine="84"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="156" TopLine="139"/>
       </Position7>
       <Position8>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="18" Column="5" TopLine="3"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="157" TopLine="139"/>
       </Position8>
       <Position9>
-        <Filename Value="main.pas"/>
-        <Caret Line="109" Column="75" TopLine="84"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="158" Column="21" TopLine="139"/>
       </Position9>
       <Position10>
-        <Filename Value="main.pas"/>
-        <Caret Line="110" Column="63" TopLine="84"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="152" TopLine="139"/>
       </Position10>
       <Position11>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="40" Column="20" TopLine="23"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="153" TopLine="139"/>
       </Position11>
       <Position12>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="222" TopLine="205"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="154" TopLine="139"/>
       </Position12>
       <Position13>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="12" Column="13"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="155" TopLine="139"/>
       </Position13>
       <Position14>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="16" Column="23"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="156" TopLine="139"/>
       </Position14>
       <Position15>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="17" Column="24"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="157" TopLine="139"/>
       </Position15>
       <Position16>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="29" Column="25" TopLine="10"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="158" TopLine="139"/>
       </Position16>
       <Position17>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="30" Column="19" TopLine="10"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="160" TopLine="146"/>
       </Position17>
       <Position18>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="49" Column="33" TopLine="29"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="166" TopLine="146"/>
       </Position18>
       <Position19>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="50" Column="27" TopLine="29"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="168" TopLine="146"/>
       </Position19>
       <Position20>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="37" Column="34" TopLine="22"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="170" TopLine="158"/>
       </Position20>
       <Position21>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="38" Column="15" TopLine="22"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="171" TopLine="158"/>
       </Position21>
       <Position22>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="36" Column="18" TopLine="21"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="174" TopLine="158"/>
       </Position22>
       <Position23>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="41" Column="28" TopLine="27"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="175" TopLine="164"/>
       </Position23>
       <Position24>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="94" Column="52" TopLine="67"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="176" TopLine="164"/>
       </Position24>
       <Position25>
-        <Filename Value="main.pas"/>
-        <Caret Line="50" Column="46" TopLine="39"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="177" TopLine="164"/>
       </Position25>
       <Position26>
-        <Filename Value="main.pas"/>
-        <Caret Line="119" Column="73" TopLine="104"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="179" TopLine="170"/>
       </Position26>
       <Position27>
-        <Filename Value="main.pas"/>
-        <Caret Line="118" Column="73" TopLine="103"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="163" Column="7" TopLine="151"/>
       </Position27>
       <Position28>
-        <Filename Value="main.pas"/>
-        <Caret Line="98" TopLine="64"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="164" Column="94" TopLine="147"/>
       </Position28>
       <Position29>
-        <Filename Value="main.pas"/>
-        <Caret Line="48" Column="34" TopLine="34"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="177" TopLine="163"/>
       </Position29>
       <Position30>
-        <Filename Value="main.pas"/>
-        <Caret Line="31" Column="16" TopLine="17"/>
+        <Filename Value="baseframe.pas"/>
+        <Caret Line="152" TopLine="137"/>
       </Position30>
     </JumpHistory>
     <RunParams>
@@ -276,15 +284,6 @@
     </RunParams>
   </ProjectSession>
   <Debugging>
-    <BreakPoints Count="1">
-      <Item1>
-        <Kind Value="bpkSource"/>
-        <WatchScope Value="wpsLocal"/>
-        <WatchKind Value="wpkWrite"/>
-        <Source Value="baseframe.pas"/>
-        <Line Value="169"/>
-      </Item1>
-    </BreakPoints>
     <Watches Count="3">
       <Item1>
         <Expression Value="AMemory^"/>
