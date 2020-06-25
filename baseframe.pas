@@ -196,6 +196,16 @@ begin
 
 
   case Opcode of
+    optCloseConnect:
+    begin
+      DataLen := Length(utfstr) + 2;
+      SetLength(utfstr, DataLen + Length(FMessageStr));
+      utfstr[2] := chr(Reason and $FF);
+      utfstr[1] := chr((Reason and $FF00) shr 8);
+      if Length(FMessageStr) > 0 then
+        move(FMessageStr[1], utfstr[3], Length(FMessageStr));
+      //      utfstr := FMessageStr;
+    end;
     optText:
     begin
       utfstr := FMessageStr;
@@ -273,7 +283,7 @@ begin
   if DataLen > 0 then
   begin
     case Opcode of
-      optText:
+      optText, optCloseConnect:
       begin
         move(utfstr[1], Result[offset], DataLen);
       end;

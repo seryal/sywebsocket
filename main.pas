@@ -116,6 +116,7 @@ begin
     begin
       TsyConnectedClient(val.Sender).SendMessageFrame(val.Message);
       Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Message Len ' + IntToStr(length(val.Message)));
+      TsyConnectedClient(val.Sender).SendCloseFrame(1000, '');
     end;
   end;
   // Verifying that the main thread does not stop the worker thread
@@ -156,6 +157,8 @@ begin
     begin
       TsyConnectedClient(val.Sender).SendBinaryFrame(val.BinaryData);
       Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Bin Length ' + IntToStr(length(val.BinaryData)));
+      TsyConnectedClient(val.Sender).SendCloseFrame(1000, '');
+
     end;
   end;
 end;

@@ -317,13 +317,14 @@ begin
       BaseFrame.Reason := AReason;
       dt := BaseFrame.SendData;
       len := Length(dt);
-      //FSock.SendBuffer(@dt[0], len);
+      FSock.SendBuffer(@dt[0], len);
     finally
       FreeAndNil(BaseFrame);
     end
   finally
     LeaveCriticalsection(FCritSection);
   end;
+  TerminateThread;
 end;
 
 procedure TsyConnectedClient.SendMessageFrame(AMessage: string);

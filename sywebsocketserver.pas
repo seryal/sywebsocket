@@ -131,7 +131,7 @@ begin
   MsgRec.Opcode := optCloseConnect;
   MsgRec.Reason := Reason;
   FMessageQueue.PushItem(MsgRec);
-  TsyConnectedClient(Sender).SendCloseFrame(3001, 'Bye');
+  TsyConnectedClient(Sender).SendCloseFrame(Reason, Message);
   TsyConnectedClient(Sender).TerminateThread;
   Queue(@CloseConnectionNotify);
 end;
