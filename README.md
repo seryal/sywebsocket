@@ -14,7 +14,7 @@ sudo apt-get install openssl libssl-dev
 ## Example
 ```pascal
 var
-  FWebSocket := TsyWebSocketServer;  
+  FWebSocket: TsyWebSocketServer;  
 
 begin
   FWebSocket := TsyWebSocketServer.Create(8081);
