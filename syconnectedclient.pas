@@ -15,6 +15,7 @@ type
 
   TOnClientTextMessage = procedure(Sender: TObject; Message: string) of object;
   TOnClientCloseConnect = procedure(Sender: TObject; Reason: integer; Message: string) of object;
+  TOnClientBinaryMessage = procedure(Sender: TObject; BinData: TDynamicByteArray) of object;
 
 
   { TsyConnectedClient }
@@ -27,6 +28,7 @@ type
     FWebSocket: boolean;
     FHandShake: boolean;
     FOnClientTextMessage: TOnClientTextMessage;
+    FOnClientBinaryData: TOnClientBinaryMessage;
     FOnClientClose: TOnClientCloseConnect;
     FTag: integer;
     FCookie: string;
@@ -48,8 +50,10 @@ type
     // комманды отправки
     procedure SendCloseFrame(AReason: integer; AMessage: string);
     procedure SendMessageFrame(AMessage: string);
+    procedure SendBinaryFrame(ABinData: TDynamicByteArray);
 
     property OnClientTextMessage: TOnClientTextMessage read FOnClientTextMessage write FOnClientTextMessage;
+    property OnClientBinaryData: TOnClientBinaryMessage read FOnClientBinaryData write FOnClientBinaryData;
     property OnClientClose: TOnClientCloseConnect read FOnClientClose write FOnClientClose;
     property Tag: integer read FTag write FTag;
   end;
@@ -178,6 +182,13 @@ begin
           begin
             if Assigned(OnClientClose) then
               OnClientClose(Self, FBaseFrame.Reason, FBaseFrame.MessageStr);
+          end;
+          optBinary:
+          begin
+            if assigned(OnClientBinaryData) then
+              OnClientBinaryData(Self, FBaseFrame.BinaryData);
+            syLog.Warning('OnMonitor Binary: ');
+
           end;
         end;
     except
@@ -330,6 +341,32 @@ begin
       BaseFrame.Opcode := optText;
       BaseFrame.Mask := False;
       BaseFrame.MessageStr := AMessage;
+      dt := BaseFrame.SendData;
+      len := Length(dt);
+      FSock.SendBuffer(@dt[0], len - 1);
+    finally
+      FreeAndNil(BaseFrame);
+    end;
+  finally
+    LeaveCriticalsection(FCritSection);
+  end;
+end;
+
+procedure TsyConnectedClient.SendBinaryFrame(ABinData: TDynamicByteArray);
+var
+  BaseFrame: TBaseFrame;
+  len: integer;
+  dt: TDynamicByteArray;
+begin
+  EnterCriticalsection(FCritSection);
+  try
+    len := Length(ABinData);
+    BaseFrame := TBaseFrame.Create;
+    try
+      BaseFrame.Fin := True;
+      BaseFrame.Opcode := optBinary;
+      BaseFrame.Mask := False;
+      BaseFrame.BinaryData := ABinData;
       dt := BaseFrame.SendData;
       len := Length(dt);
       FSock.SendBuffer(@dt[0], len - 1);

@@ -8,10 +8,9 @@
       <Unit0>
         <Filename Value="testApp.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <CursorPos X="83" Y="13"/>
-        <UsageCount Value="104"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="111"/>
       </Unit0>
       <Unit1>
         <Filename Value="main.pas"/>
@@ -19,9 +18,10 @@
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <TopLine Value="101"/>
-        <CursorPos X="42" Y="114"/>
-        <UsageCount Value="104"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="120"/>
+        <CursorPos X="83" Y="138"/>
+        <UsageCount Value="111"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -29,34 +29,34 @@
         <Filename Value="sywebsocketserver.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="syWebSocketServer"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="7" Y="86"/>
-        <UsageCount Value="104"/>
-        <Bookmarks Count="2">
-          <Item0 X="15" Y="41" ID="2"/>
-          <Item1 X="7" Y="86" ID="1"/>
-        </Bookmarks>
+        <EditorIndex Value="2"/>
+        <TopLine Value="128"/>
+        <CursorPos Y="147"/>
+        <UsageCount Value="111"/>
+        <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="syconnectedclient.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="312"/>
-        <CursorPos Y="327"/>
-        <UsageCount Value="104"/>
+        <TopLine Value="354"/>
+        <CursorPos X="40" Y="367"/>
+        <UsageCount Value="111"/>
+        <Bookmarks Count="1">
+          <Item0 X="17" Y="369" ID="1"/>
+        </Bookmarks>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="baseframe.pas"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="3"/>
-        <TopLine Value="141"/>
-        <CursorPos Y="152"/>
-        <UsageCount Value="52"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="179"/>
+        <CursorPos Y="194"/>
+        <UsageCount Value="59"/>
         <Bookmarks Count="2">
-          <Item0 Y="282" ID="3"/>
-          <Item1 Y="252" ID="1"/>
+          <Item0 Y="348" ID="3"/>
+          <Item1 X="3" Y="189" ID="2"/>
         </Bookmarks>
         <Loaded Value="True"/>
       </Unit4>
@@ -77,8 +77,7 @@
       <Unit7>
         <Filename Value="sylogevent.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="74"/>
-        <CursorPos Y="93"/>
+        <CursorPos X="88" Y="89"/>
         <UsageCount Value="10"/>
       </Unit7>
       <Unit8>
@@ -133,10 +132,11 @@
       <Unit15>
         <Filename Value="C:\lazarus\components\lazutils\lazcollections.pas"/>
         <UnitName Value="lazCollections"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="46"/>
-        <CursorPos X="14" Y="61"/>
-        <UsageCount Value="8"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="203"/>
+        <CursorPos Y="218"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
       </Unit15>
       <Unit16>
         <Filename Value="C:\Users\yus\AppData\Local\lazarus\onlinepackagemanager\packages\synapse40.1\synautil.pas"/>
@@ -159,123 +159,123 @@
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="157" TopLine="142"/>
+        <Caret Line="227" TopLine="213"/>
       </Position1>
       <Position2>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="158" Column="88" TopLine="142"/>
+        <Caret Line="228" TopLine="219"/>
       </Position2>
       <Position3>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="152" TopLine="139"/>
+        <Caret Line="231" TopLine="219"/>
       </Position3>
       <Position4>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="153" TopLine="139"/>
+        <Caret Line="232" TopLine="219"/>
       </Position4>
       <Position5>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="154" TopLine="139"/>
+        <Caret Line="233" TopLine="219"/>
       </Position5>
       <Position6>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="155" TopLine="139"/>
+        <Caret Line="234" TopLine="219"/>
       </Position6>
       <Position7>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="156" TopLine="139"/>
+        <Caret Line="236" TopLine="225"/>
       </Position7>
       <Position8>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="157" TopLine="139"/>
+        <Caret Line="239" TopLine="225"/>
       </Position8>
       <Position9>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="158" Column="21" TopLine="139"/>
+        <Caret Line="240" TopLine="225"/>
       </Position9>
       <Position10>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="152" TopLine="139"/>
+        <Caret Line="273" TopLine="271"/>
       </Position10>
       <Position11>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="153" TopLine="139"/>
+        <Caret Line="286" TopLine="271"/>
       </Position11>
       <Position12>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="154" TopLine="139"/>
+        <Caret Line="287" TopLine="271"/>
       </Position12>
       <Position13>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="155" TopLine="139"/>
+        <Caret Line="193" TopLine="178"/>
       </Position13>
       <Position14>
         <Filename Value="baseframe.pas"/>
-        <Caret Line="156" TopLine="139"/>
+        <Caret Line="288" TopLine="274"/>
       </Position14>
       <Position15>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="157" TopLine="139"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="371" TopLine="354"/>
       </Position15>
       <Position16>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="158" TopLine="139"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="372" TopLine="354"/>
       </Position16>
       <Position17>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="160" TopLine="146"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="365" TopLine="354"/>
       </Position17>
       <Position18>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="166" TopLine="146"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="362" TopLine="354"/>
       </Position18>
       <Position19>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="168" TopLine="146"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="361" TopLine="354"/>
       </Position19>
       <Position20>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="170" TopLine="158"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="157" TopLine="134"/>
       </Position20>
       <Position21>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="171" TopLine="158"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="53" Column="16" TopLine="39"/>
       </Position21>
       <Position22>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="174" TopLine="158"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="372" TopLine="354"/>
       </Position22>
       <Position23>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="175" TopLine="164"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="158" Column="43" TopLine="134"/>
       </Position23>
       <Position24>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="176" TopLine="164"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="372" TopLine="354"/>
       </Position24>
       <Position25>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="177" TopLine="164"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="365" TopLine="354"/>
       </Position25>
       <Position26>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="179" TopLine="170"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="362" TopLine="354"/>
       </Position26>
       <Position27>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="163" Column="7" TopLine="151"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="157" TopLine="134"/>
       </Position27>
       <Position28>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="164" Column="94" TopLine="147"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="372" TopLine="354"/>
       </Position28>
       <Position29>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="177" TopLine="163"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="157" TopLine="134"/>
       </Position29>
       <Position30>
-        <Filename Value="baseframe.pas"/>
-        <Caret Line="152" TopLine="137"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="138" Column="84" TopLine="116"/>
       </Position30>
     </JumpHistory>
     <RunParams>

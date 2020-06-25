@@ -29,14 +29,30 @@ type
   public
     procedure Clear;
     procedure LoadMessage(AData: TDynamicByteArray; AStart: byte; ALen: integer; AMaskKey: longword);
-    property MessageStr: string read FMessage write FMessage;
+    property MessageStr: string read FMessage;
   end;
+
+  { TPayLoadBinary }
+
+  TPayLoadBinary = object
+  private
+    FBinaryData: TDynamicByteArray;
+    procedure Clear;
+    procedure LoadBinary(AData: TDynamicByteArray; AStart: byte; ALen: integer; AMaskKey: longword);
+    property BinaryData: TDynamicByteArray read FBinaryData;
+
+  end;
+
 
   { TBaseFrame }
 
   TBaseFrame = class
   private
+    // string of message
     FMessageStr: string;
+    // binary data
+    FBinaryData: TDynamicByteArray;
+
     FPayloadLen7: byte;
     FPayloadLen16: word;
     FPayloadLen64: int64;
@@ -69,6 +85,7 @@ type
     procedure Parse(AMemory: Pointer; Len: integer);
     property PayloadLen: int64 read GetPayloadLen;
     property MessageStr: string read FMessageStr write SetMessage;
+    property BinaryData: TDynamicByteArray read FBinaryData write FBinaryData;
     property Reason: integer read FReason write FReason;
     property SendData: TDynamicByteArray read GetSendData;
     property Ready: boolean read getReady;
@@ -87,6 +104,31 @@ type
 
 implementation
 
+{ TPayLoadBinary }
+
+procedure TPayLoadBinary.Clear;
+begin
+
+end;
+
+procedure TPayLoadBinary.LoadBinary(AData: TDynamicByteArray; AStart: byte; ALen: integer; AMaskKey: longword);
+var
+  i: integer;
+  r: integer;
+  Buffer: TDynamicByteArray;
+begin
+  if ALen > 0 then
+  begin
+    SetLength(Buffer, Alen);
+    for i := 0 to ALen - 1 do
+    begin
+      r := (AMaskKey shr ((i mod 4) * 8)) and $FF;
+      Buffer[i] := AData[AStart + i] xor r;
+    end;
+    FBinaryData := Buffer;
+  end;
+end;
+
 { TPayloadText }
 
 procedure TPayloadText.Clear;
@@ -102,7 +144,7 @@ var
   Buffer: TDynamicByteArray;
   val: string;
 begin
-  MessageStr := '';
+  FMessage := '';
   if ALen > 0 then
   begin
     SetLength(Buffer, Alen);
@@ -118,7 +160,7 @@ begin
 
     move(Buffer[0], str[1], ALen);
     //str := 'dd';
-    MessageStr := str;
+    FMessage := str;
   end;
   //  syLog.Info(val);
 end;
@@ -144,18 +186,33 @@ end;
 function TBaseFrame.GetSendData: TDynamicByteArray;
 var
   plen: integer;
-  strlen: integer;
+  DataLen: integer;
   utfstr: UTF8String;
   offset: integer;
   ptype: integer;
 begin
   plen := High(word);
   plen := 2;
-  utfstr := FMessageStr;
-  if Length(utfstr) > 125 then
+
+
+  case Opcode of
+    optText:
+    begin
+      utfstr := FMessageStr;
+      DataLen := Length(utfstr);
+    end;
+    optBinary:
+    begin
+      DataLen := Length(FBinaryData);
+    end;
+  end;
+
+  if DataLen > 125 then
     plen := plen + 2;
-  if Length(utfstr) > High(word) then
+  if DataLen > High(word) then
     plen := plen + 6;
+
+
 
   case plen of
     2: ptype := 1;
@@ -163,9 +220,9 @@ begin
     10: ptype := 3;
   end;
 
-  plen := plen + Length(utfstr);
+  plen := plen + DataLen;
 
-  strlen := Length(utfstr);
+
   // Set length of dynamic array
   SetLength(Result, plen + 1);
   offset := 0;
@@ -179,45 +236,54 @@ begin
   case ptype of
     1:
     begin
-      Result[offset] := Result[offset] or strlen;
+      Result[offset] := Result[offset] or DataLen;
       Inc(offset);
     end;
     2:
     begin
       Result[offset] := 126;
       Inc(Offset);
-      Result[offset] := (strlen and $ff00) shr 8;
+      Result[offset] := (DataLen and $ff00) shr 8;
       Inc(Offset);
-      Result[offset] := strlen and $ff;
+      Result[offset] := DataLen and $ff;
       Inc(offset);
     end;
     3:     // ????
     begin
       Result[offset] := 127;
       Inc(offset);
-      Result[offset] := (strlen and $ff00000000000000) shr 56;
+      Result[offset] := (DataLen and $ff00000000000000) shr 56;
       Inc(offset);
-      Result[offset] := (strlen and $ff000000000000) shr 48;
+      Result[offset] := (DataLen and $ff000000000000) shr 48;
       Inc(offset);
-      Result[offset] := (strlen and $ff0000000000) shr 40;
+      Result[offset] := (DataLen and $ff0000000000) shr 40;
       Inc(offset);
-      Result[offset] := (strlen and $ff00000000) shr 32;
+      Result[offset] := (DataLen and $ff00000000) shr 32;
       Inc(offset);
-      Result[offset] := (strlen and $ff000000) shr 24;
+      Result[offset] := (DataLen and $ff000000) shr 24;
       Inc(offset);
-      Result[offset] := (strlen and $ff0000) shr 16;
+      Result[offset] := (DataLen and $ff0000) shr 16;
       Inc(offset);
-      Result[offset] := (strlen and $ff00) shr 8;
+      Result[offset] := (DataLen and $ff00) shr 8;
       Inc(offset);
-      Result[offset] := strlen and $ff;
+      Result[offset] := DataLen and $ff;
       Inc(offset);
     end;
   end;
-  if strlen > 0 then
+  if DataLen > 0 then
   begin
-    move(utfstr[1], Result[offset], strlen);
+    case Opcode of
+      optText:
+      begin
+        move(utfstr[1], Result[offset], DataLen);
+      end;
+      optBinary:
+      begin
+        move(FBinaryData[0], Result[offset], DataLen);
+      end;
+    end;
   end;
-  Result[offset + strlen] := 0;
+  Result[offset + DataLen] := 0;
   utfstr := '';
 end;
 
@@ -281,6 +347,7 @@ var
   Data: ^TDynamicByteArray;
   offset: byte;
   Message: TPayloadText;
+  Binary: TPayLoadBinary;
 begin
 
   if not FContinueBuffer then
@@ -340,7 +407,13 @@ begin
       Message.LoadMessage(FBufferArray, offset, PayloadLen, MaskingKey);
       FMessageStr := Message.MessageStr;
     end;
-    optBinary: ;
+    optBinary:
+    begin
+      Binary.LoadBinary(FBufferArray, offset, PayloadLen, MaskingKey);
+      FBinaryData := Binary.BinaryData;
+      syLog.Warning('Binary Data');
+
+    end;
     optCloseConnect:
     begin
       Message.LoadMessage(FBufferArray, offset, PayloadLen, MaskingKey);
