@@ -30,6 +30,7 @@ type
     FWebSocket: TsyWebSocketServer;
     procedure OnBinData(Sender: TObject);
     procedure OnCloseConnection(Sender: TObject);
+    procedure OnPing(Sender: TObject);
     procedure OnTextMessage(Sender: TObject);
   public
 
@@ -51,6 +52,7 @@ begin
   FWebSocket.OnTextMessage := @OnTextMessage;
   FWebSocket.OnBinData := @OnBinData;
   FWebSocket.OnCloseConnection := @OnCloseConnection;
+  FWebSocket.OnPing := @OnPing;
   FWebSocket.Start;
   btnStart.Enabled := False;
   btnStop.Enabled := True;
@@ -116,7 +118,8 @@ begin
     begin
       TsyConnectedClient(val.Sender).SendMessageFrame(val.Message);
       Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Message Len ' + IntToStr(length(val.Message)));
-      TsyConnectedClient(val.Sender).SendCloseFrame(1000, '');
+      //      Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Message Len ' + val.Message);
+      //      TsyConnectedClient(val.Sender).SendCloseFrame(1000, '');
     end;
   end;
   // Verifying that the main thread does not stop the worker thread
@@ -142,6 +145,24 @@ begin
 
 end;
 
+procedure TForm1.OnPing(Sender: TObject);
+var
+  val: TMessageRecord;
+begin
+  if not Assigned(FWebSocket) then
+    exit;
+  if FWebSocket.MessageQueue.TotalItemsPushed = FWebSocket.MessageQueue.TotalItemsPopped then
+    exit;
+  while FWebSocket.MessageQueue.TotalItemsPushed <> FWebSocket.MessageQueue.TotalItemsPopped do
+  begin
+    FWebSocket.MessageQueue.PopItemTimeout(val, 100);
+    if val.Opcode = optCloseConnect then
+    begin
+      Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Close Len ' + IntToStr(length(val.Message)));
+    end;
+  end;
+end;
+
 procedure TForm1.OnBinData(Sender: TObject);
 var
   val: TMessageRecord;
@@ -155,7 +176,7 @@ begin
     FWebSocket.MessageQueue.PopItemTimeout(val, 100);
     if val.Opcode = optBinary then
     begin
-      TsyConnectedClient(val.Sender).SendBinaryFrame(val.BinaryData);
+      //      TsyConnectedClient(val.Sender).SendBinaryFrame(val.BinaryData);
       Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Bin Length ' + IntToStr(length(val.BinaryData)));
       TsyConnectedClient(val.Sender).SendCloseFrame(1000, '');
 

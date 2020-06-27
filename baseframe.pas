@@ -40,6 +40,12 @@ type
     procedure Clear;
     procedure LoadBinary(AData: TDynamicByteArray; AStart: byte; ALen: integer; AMaskKey: longword);
     property BinaryData: TDynamicByteArray read FBinaryData;
+  end;
+
+  TPayLoadPong = object
+  private
+
+  public
 
   end;
 
@@ -194,7 +200,7 @@ begin
   plen := High(word);
   plen := 2;
 
-
+  DataLen := 0;
   case Opcode of
     optCloseConnect:
     begin
@@ -206,7 +212,7 @@ begin
         move(FMessageStr[1], utfstr[3], Length(FMessageStr));
       //      utfstr := FMessageStr;
     end;
-    optText:
+    optText, optPong:
     begin
       utfstr := FMessageStr;
       DataLen := Length(utfstr);
@@ -283,7 +289,7 @@ begin
   if DataLen > 0 then
   begin
     case Opcode of
-      optText, optCloseConnect:
+      optText, optPong, optCloseConnect:
       begin
         move(utfstr[1], Result[offset], DataLen);
       end;
@@ -359,7 +365,13 @@ var
   Message: TPayloadText;
   Binary: TPayLoadBinary;
 begin
+  // Houston, we have a problem
+  // in this implementation may be problem.!!!! I will refactor it
 
+  // when we receive block of data from socket this block may consist of different websoclet packet
+  // example received block can be like this
+  // [0000<DATA FISRT PACKET>000|1111<DATA SECOND PACKET>11111]
+  // if we receive such packet we wil have a problem.
   if not FContinueBuffer then
   begin
     // calculate full size of websocketbuffer.
@@ -375,7 +387,7 @@ begin
   Move(Data^[0], FBufferArray[FIncomSize], Len);
   dispose(Data);
   FIncomSize := FIncomSize + Len;
-  if FIncomSize = FPacketLen then
+  if FIncomSize >= FPacketLen then
     FContinueBuffer := False;
   if FContinueBuffer then
     exit;
@@ -412,7 +424,7 @@ begin
   end;
   case Opcode of
     optContinue: ;
-    optText:
+    optText, optPing:
     begin
       Message.LoadMessage(FBufferArray, offset, PayloadLen, MaskingKey);
       FMessageStr := Message.MessageStr;
@@ -422,7 +434,6 @@ begin
       Binary.LoadBinary(FBufferArray, offset, PayloadLen, MaskingKey);
       FBinaryData := Binary.BinaryData;
       syLog.Warning('Binary Data');
-
     end;
     optCloseConnect:
     begin
@@ -440,8 +451,12 @@ begin
           end;
       end;
     end;
-    optPing: ;
-    optPong: ;
+    optPong:
+    begin
+      Message.LoadMessage(FBufferArray, offset, PayloadLen, MaskingKey);
+      FMessageStr := Message.MessageStr;
+
+    end;
   end;
 
 end;

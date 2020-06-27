@@ -5,17 +5,17 @@ unit syconnectedclient;
 interface
 
 uses
-  Classes, SysUtils, blcksock, synautil, synsock, ssl_openssl, sylogevent, sha1, base64, baseframe;
+  Classes, SysUtils, blcksock, synautil, synsock, ssl_openssl, sylogevent, sha1, base64, websocketframe, httpheader;
 
 const
   TIMEOUT = 10000;
-  ANSWER_STRING = 'It''s Sy Websocket Server';
+  ANSWER_STRING = 'It''s sy Websocket Server';
 
 type
 
   TOnClientTextMessage = procedure(Sender: TObject; Message: string) of object;
   TOnClientCloseConnect = procedure(Sender: TObject; Reason: integer; Message: string) of object;
-  TOnClientBinaryMessage = procedure(Sender: TObject; BinData: TDynamicByteArray) of object;
+  //  TOnClientBinaryMessage = procedure(Sender: TObject; BinData: TDynamicByteArray) of object;
 
 
   { TsyConnectedClient }
@@ -23,17 +23,18 @@ type
   TsyConnectedClient = class(TThread)
   private
     FCritSection: TRTLCriticalSection;
+    FOnClientPing: TOnClientTextMessage;
     FTerminateEvent: PRTLEvent;
     FSock: TTCPBlockSocket;
     FWebSocket: boolean;
     FHandShake: boolean;
     FOnClientTextMessage: TOnClientTextMessage;
-    FOnClientBinaryData: TOnClientBinaryMessage;
+    //    FOnClientBinaryData: TOnClientBinaryMessage;
     FOnClientClose: TOnClientCloseConnect;
     FTag: integer;
     FCookie: string;
-    FBaseFrame: TBaseFrame;
-
+    //FBaseFrame: TBaseFrame;
+    FWebsocketFrame: TWebsocketFrame;
     function MyEncodeBase64(sha1: TSHA1Digest): string;
     procedure Execute; override;
     procedure OnMonitor(Sender: TObject; Writing: boolean; const Buffer: TMemory; Len: integer);
@@ -42,6 +43,8 @@ type
     procedure SendHTTPAnswer;
     procedure SendHandShake(ASecWebSocketKey: string);
     function GetWebSocketKey(AHeader: TStringList): string;
+    procedure DataProcessing(AWebsocketFrame: TWebsocketFrame);
+
   public
     constructor Create(hSock: TSocket);
     destructor Destroy; override;
@@ -50,11 +53,13 @@ type
     // комманды отправки
     procedure SendCloseFrame(AReason: integer; AMessage: string);
     procedure SendMessageFrame(AMessage: string);
-    procedure SendBinaryFrame(ABinData: TDynamicByteArray);
+    //    procedure SendBinaryFrame(ABinData: TDynamicByteArray);
+    procedure SendPong(AMessage: string);
 
     property OnClientTextMessage: TOnClientTextMessage read FOnClientTextMessage write FOnClientTextMessage;
-    property OnClientBinaryData: TOnClientBinaryMessage read FOnClientBinaryData write FOnClientBinaryData;
+    //  property OnClientBinaryData: TOnClientBinaryMessage read FOnClientBinaryData write FOnClientBinaryData;
     property OnClientClose: TOnClientCloseConnect read FOnClientClose write FOnClientClose;
+    property OnClientPing: TOnClientTextMessage read FOnClientPing write FOnClientPing;
     property Tag: integer read FTag write FTag;
   end;
 
@@ -93,67 +98,73 @@ var
   s: string;
   HTTPRec: THTTPRecord;
   Header: TStringList;
+  //  HeaderBuf: array [0..1000] of byte;
+
 begin
   FSock.OnMonitor := @OnMonitor;
   FSock.OnStatus := @OnStatus;
   FWebSocket := False;
   FHandShake := False;
-  while not Terminated do
-  begin
-    s := FSock.RecvString(TIMEOUT);
-    // get http header
-    sylog.Info(FSock.LastErrorDesc);
+  s := FSock.RecvString(TIMEOUT);
+  sylog.Info(FSock.LastErrorDesc);
 
-    if (FSock.LastError = WSAETIMEDOUT) or (FSock.LastError = 0) then
+  if FSock.LastError <> 0 then
+  begin
+    syLog.Info(FSock.LastErrorDesc);
+    exit;
+  end;
+
+  HTTPRec.Parse(s);
+  // if not HTTP request then close connection
+  if HTTPRec.Protocol <> 'HTTP/1.1' then
+    exit;
+
+  // read header
+  Header := TStringList.Create;
+  try
+    repeat
+      s := FSock.RecvString(TIMEOUT);
+      Header.Add(s);
+    until s = '';
+    FWebSocket := IsWebSocketConnect(Header);
+
+    if FWebSocket then
     begin
-      syLog.Info(FSock.LastErrorDesc);
+      if not FHandShake then
+      begin
+        // Handshake with client
+        SendHandShake(GetWebSocketKey(Header));
+        FHandShake := True;
+        syLog.Info('WebSocket Connection');
+        // loop for read buffer
+      end;
     end
     else
     begin
-      TerminateThread;
+      // Send Answer to browser
+      Sylog.Info('HTTP Connection');
+      SendHTTPAnswer;
       exit;
-
     end;
-    if s = '' then
-      Continue;
-    HTTPRec.Parse(s);
-
-    // if not HTTP request then close connection
-    if HTTPRec.Protocol <> 'HTTP/1.1' then
-      exit;
-
-    // read header
-    Header := TStringList.Create;
+  finally
+    FreeAndNil(Header);
+  end;
+  if FHandShake then
+  begin
+    FWebsocketFrame := TWebsocketFrame.Create(FSock);
     try
-      if not FWebSocket then
+      // Websocket Loop
+      while not Terminated do
       begin
-        repeat
-          s := FSock.RecvString(TIMEOUT);
-          Header.Add(s);
-        until s = '';
-        FWebSocket := IsWebSocketConnect(Header);
+        // get data from websocket
+        FWebsocketFrame.Start;
+        if FSock.LastError <> 0 then
+          exit;
+        // manipulate with Data
+        DataProcessing(FWebsocketFrame);
       end;
-      if FWebSocket then
-      begin
-        if not FHandShake then
-        begin
-          SendHandShake(GetWebSocketKey(Header));
-          FHandShake := True;
-        end;
-
-        // Handshake with client
-        syLog.Info('WebSocket Connection');
-      end
-      else
-      begin
-        // Send Answer to browser
-        Sylog.Info('HTTP Connection');
-        SendHTTPAnswer;
-        TerminateThread;
-      end;
-      syLog.Log(Header.Text);
     finally
-      FreeAndNil(Header);
+      FreeAndNil(FWebsocketFrame);
     end;
   end;
   TerminateThread;
@@ -170,7 +181,7 @@ begin
 
     // Необходимо вычислить полную длину приходящего пакета
     syLog.Info('OnMonitor: ' + IntToStr(FSock.LastError));
-
+   {
     try
       FBaseFrame.Parse(Buffer, Len);
       if FBaseFrame.Ready then
@@ -188,12 +199,28 @@ begin
             if assigned(OnClientBinaryData) then
               OnClientBinaryData(Self, FBaseFrame.BinaryData);
             syLog.Warning('OnMonitor Binary: ');
-
+          end;
+          optPing:
+          begin
+            if length(FBaseFrame.MessageStr) > 125 then
+            begin
+              SendCloseFrame(1002, '');
+              TerminateThread;
+              Exit;
+            end;
+            if Assigned(OnClientPing) then
+              OnClientPing(Self, FBaseFrame.MessageStr);
+            syLog.Warning('OnMonitor Ping: ');
+            SendPong(FBaseFrame.MessageStr);
+          end;
+          optPong:
+          begin
+            SendCloseFrame(1000, '');
           end;
         end;
     except
     end;
-
+       }
   end;
 end;
 
@@ -226,7 +253,7 @@ begin
   FSock.SendString('Content-length: ' + IntToStr(Length(AnswerStr)) + CRLF);
   FSock.SendString('Date: ' + Rfc822DateTime(now) + CRLF);
   FSock.SendString('Connection: close' + CRLF);
-  FSock.SendString('Server: SyWebsocket Server' + CRLF);
+  FSock.SendString('Server: syWebsocket Server' + CRLF);
   FSock.SendString('' + CRLF);
   FSock.SendString(AnswerStr);
 end;
@@ -252,6 +279,7 @@ begin
   FSock.SendString(sendStr + CRLF);
 end;
 
+
 function TsyConnectedClient.GetWebSocketKey(AHeader: TStringList): string;
 var
   s: string;
@@ -270,6 +298,17 @@ begin
   end;
 end;
 
+procedure TsyConnectedClient.DataProcessing(AWebsocketFrame: TWebsocketFrame);
+begin
+  case AWebsocketFrame.Opcode of
+    optText:
+    begin
+      if Assigned(OnClientTextMessage) then
+        OnClientTextMessage(Self, AWebsocketFrame.MessageStr);
+    end;
+  end;
+end;
+
 constructor TsyConnectedClient.Create(hSock: TSocket);
 begin
   syLog.Info('Start Client Thread');
@@ -278,14 +317,12 @@ begin
   FSock := TTCPBlockSocket.Create;
   FSock.Socket := hSock;
   FreeOnTerminate := True;
-  FBaseFrame := TBaseFrame.Create;
   inherited Create(True);
 end;
 
 destructor TsyConnectedClient.Destroy;
 begin
   FreeAndNil(FSock);
-  FreeAndNil(FBaseFrame);
   RTLeventdestroy(FTerminateEvent);
   DoneCriticalsection(FCritSection);
   inherited Destroy;
@@ -302,25 +339,25 @@ end;
 
 procedure TsyConnectedClient.SendCloseFrame(AReason: integer; AMessage: string);
 var
-  BaseFrame: TBaseFrame;
+  WFrame: TWebsocketFrame;
   len: integer;
-  dt: TDynamicByteArray;
 begin
+  syLog.Info('Send Close Frame');
+  ;
   EnterCriticalsection(FCritSection);
   try
-    BaseFrame := TBaseFrame.Create;
+    len := Length(AMessage);
+    WFrame := TWebsocketFrame.Create;
     try
-      BaseFrame.Fin := True;
-      BaseFrame.Opcode := optCloseConnect;
-      BaseFrame.Mask := False;
-      BaseFrame.MessageStr := AMessage;
-      BaseFrame.Reason := AReason;
-      dt := BaseFrame.SendData;
-      len := Length(dt);
-      FSock.SendBuffer(@dt[0], len);
+      WFrame.Opcode := optCloseConnect;
+      WFrame.Mask := False;
+      WFrame.Reason := AReason;
+      WFrame.MessageStr := AMessage;
+      if FSock.CanWrite(100) then
+        FSock.SendBuffer(WFrame.SendData, WFrame.FrameSize);
     finally
-      FreeAndNil(BaseFrame);
-    end
+      FreeAndNil(WFrame);
+    end;
   finally
     LeaveCriticalsection(FCritSection);
   end;
@@ -329,31 +366,30 @@ end;
 
 procedure TsyConnectedClient.SendMessageFrame(AMessage: string);
 var
-  BaseFrame: TBaseFrame;
+  WFrame: TWebsocketFrame;
   len: integer;
-  dt: TDynamicByteArray;
 begin
+  syLog.Info('Send Message');
   EnterCriticalsection(FCritSection);
   try
     len := Length(AMessage);
-    BaseFrame := TBaseFrame.Create;
+    WFrame := TWebsocketFrame.Create;
     try
-      BaseFrame.Fin := True;
-      BaseFrame.Opcode := optText;
-      BaseFrame.Mask := False;
-      BaseFrame.MessageStr := AMessage;
-      dt := BaseFrame.SendData;
-      len := Length(dt);
-      FSock.SendBuffer(@dt[0], len - 1);
+      WFrame.Opcode := optText;
+      WFrame.Mask := False;
+      WFrame.MessageStr := AMessage;
+      if FSock.CanWrite(100) then
+        len := FSock.SendBuffer(WFrame.SendData, WFrame.FrameSize);
+      len := 0;
     finally
-      FreeAndNil(BaseFrame);
+      FreeAndNil(WFrame);
     end;
   finally
     LeaveCriticalsection(FCritSection);
   end;
 end;
 
-procedure TsyConnectedClient.SendBinaryFrame(ABinData: TDynamicByteArray);
+{procedure TsyConnectedClient.SendBinaryFrame(ABinData: TDynamicByteArray);
 var
   BaseFrame: TBaseFrame;
   len: integer;
@@ -377,6 +413,33 @@ begin
   finally
     LeaveCriticalsection(FCritSection);
   end;
+end;
+}
+
+procedure TsyConnectedClient.SendPong(AMessage: string);
+///var
+//  BaseFrame: TBaseFrame;
+//  len: integer;
+//  dt: TDynamicByteArray;
+begin
+{  EnterCriticalsection(FCritSection);
+  try
+    len := Length(AMessage);
+    BaseFrame := TBaseFrame.Create;
+    try
+      BaseFrame.Fin := True;
+      BaseFrame.Opcode := optPong;
+      BaseFrame.Mask := False;
+      BaseFrame.MessageStr := AMessage;
+      dt := BaseFrame.SendData;
+      len := Length(dt);
+      FSock.SendBuffer(@dt[0], len - 1);
+    finally
+      FreeAndNil(BaseFrame);
+    end;
+  finally
+    LeaveCriticalsection(FCritSection);
+  end;   }
 end;
 
 procedure TsyConnectedClient.OnStatus(Sender: TObject; Reason: THookSocketReason; const Value: string);
@@ -415,7 +478,6 @@ end;
 
 
 end.
-
 
 
 

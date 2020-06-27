@@ -27,6 +27,7 @@ type
   TsyWebSocketServer = class(TThread)
   private
     FClientCount: integer;
+    FOnPing: TNotifyEvent;
     FSock: TTCPBlockSocket;
     FPort: integer;
     FLockedClientList: TLockedClientList;
@@ -37,12 +38,14 @@ type
     FOnCloseConnection: TNotifyEvent;
     procedure OnClientBinaryData(Sender: TObject; BinData: TDynamicByteArray);
     procedure OnClientClose(Sender: TObject; Reason: integer; Message: string);
+    procedure OnClientPing(Sender: TObject; Message: string);
     procedure OnClientTextMessage(Sender: TObject; Message: string);
     procedure OnTerminate(Sender: TObject);
 
     procedure TextMessageNotify;
     procedure CloseConnectionNotify;
     procedure BinDataNotify;
+    procedure PingMessageNotify;
   public
     constructor Create(APort: integer);
     destructor Destroy; override;
@@ -50,6 +53,7 @@ type
     property OnTextMessage: TNotifyEvent read FOnTextMessage write FOnTextMessage;
     property OnCloseConnection: TNotifyEvent read FOnCloseConnection write FOnCloseConnection;
     property OnBinData: TNotifyEvent read FOnBinData write FOnBinData;
+    property OnPing: TNotifyEvent read FOnPing write FOnPing;
     property MessageQueue: TMessageQueue read FMessageQueue;
     property LockedClientList: TLockedClientList read FLockedClientList;
   end;
@@ -100,6 +104,14 @@ begin
 
 end;
 
+procedure TsyWebSocketServer.PingMessageNotify;
+begin
+  if Terminated then
+    exit;
+  if Assigned(OnPing) then
+    OnPing(self);
+end;
+
 procedure TsyWebSocketServer.OnClientTextMessage(Sender: TObject; Message: string);
 var
   MsgRec: TMessageRecord;
@@ -134,6 +146,24 @@ begin
   TsyConnectedClient(Sender).SendCloseFrame(Reason, Message);
   TsyConnectedClient(Sender).TerminateThread;
   Queue(@CloseConnectionNotify);
+end;
+
+procedure TsyWebSocketServer.OnClientPing(Sender: TObject; Message: string);
+var
+  MsgRec: TMessageRecord;
+begin
+  // add message to Queue
+  if not (Sender is TsyConnectedClient) then
+    exit;
+  MsgRec.Message := Message;
+  MsgRec.Sender := TsyConnectedClient(Sender);
+  MsgRec.Opcode := optPing;
+  MsgRec.Reason := 0;
+  FMessageQueue.PushItem(MsgRec);
+
+  // send event to MainProgram about new Text Message
+  // The client must read the data from the queue FMessageQueue;
+  Queue(@PingMessageNotify);
 end;
 
 procedure TsyWebSocketServer.OnClientBinaryData(Sender: TObject; BinData: TDynamicByteArray);
@@ -211,7 +241,8 @@ begin
         Client.OnTerminate := @OnTerminate;
         Client.OnClientTextMessage := @OnClientTextMessage;
         Client.OnClientClose := @OnClientClose;
-        Client.OnClientBinaryData := @OnClientBinaryData;
+//        Client.OnClientBinaryData := @OnClientBinaryData;
+        Client.OnClientPing := @OnClientPing;
         Client.Tag := FClientCount;
         Inc(FClientCount);
         FLockedClientList.Add(Client);
