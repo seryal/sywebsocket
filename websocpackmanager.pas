@@ -9,8 +9,6 @@ uses
 
 const
   MIN_WEBSOCKETSIZE = 2;
-  MIN_HEAD126 = 4;
-  MIN_HEAD127 = 10;
 
 type
   PBytes = ^TBytes;
@@ -27,12 +25,16 @@ type
     // Список полученых фреймов
     FFrameQueue: TFrameQueue;
 
+    function GetCount: integer;
+    function GetPop: TMemoryStream;
     function GetWebsocketFrameSize(ABuffer: Pointer; ASize: integer): QWord;
     function InsertWebsocketFrame(ABuffer: TBytes; Position: integer; Size: integer): integer;
   public
     constructor Create;
     destructor Destroy; override;
-    procedure InsertData2(AData: TBytes; ALen: integer);
+    procedure InsertData(AData: TBytes; ALen: integer);
+    property Count: integer read GetCount;
+    property Pop: TMemoryStream read GetPop;
   end;
 
 implementation
@@ -91,6 +93,16 @@ begin
   Result := PayloadLen + HeaderCount;
 end;
 
+function TWebsockPackManager.GetCount: integer;
+begin
+  Result := FFrameQueue.Count;
+end;
+
+function TWebsockPackManager.GetPop: TMemoryStream;
+begin
+  Result := FFrameQueue.Dequeue;
+end;
+
 
 function TWebsockPackManager.InsertWebsocketFrame(ABuffer: TBytes; Position: integer; Size: integer): integer;
 begin
@@ -123,19 +135,19 @@ begin
 end;
 
 
-procedure TWebsockPackManager.InsertData2(AData: TBytes; ALen: integer);
+procedure TWebsockPackManager.InsertData(AData: TBytes; ALen: integer);
 var
   tmp: integer;
   Mem: Pointer;
-  // количество еще не обработаных байт
+  // count not used byte
   Amount: integer;
   Position: integer;
 begin
   Amount := ALen;
-  // смещение до следующего фрейма
+  // offset to next frame
   Position := 0;
 
-  // формируем заголовок
+  // try frame
   while Amount > 0 do
   begin
     while (FFrameSize = 0) and (Amount > 0) do
@@ -161,9 +173,9 @@ begin
 
     if FWebsocketBuffer.Size = FFrameSize then
     begin
-      // Сохраним фрейм в список
+      // save frame to queue
       FFrameQueue.Enqueue(FWebsocketBuffer);
-      // создаем новый буфер.
+      // create ne frame
       FWebsocketBuffer := TMemoryStream.Create;
       FFrameSize := 0;
     end;
@@ -172,46 +184,6 @@ end;
 
 
 end.
-{
-// если ждем новый пакетif FNewPacket then
-begin
-// ожидаемый размер пакета  FFrameSize := MIN_WEBSOCKETSIZE;
-// если пришел только 1 байт то запишем его, потому как не сможем вычислить размер пакета
-if Amount < MIN_WEBSOCKETSIZE then
-begin
-// запишем один пришедший байт в буфер    FWebsocketBuffer.Clear;
-FWebsocketBuffer.write(Adata[0 + Position], Amount);
-FSavedSize := Amount;
-tmp := FWebsocketBuffer.Size;
-FNewPacket := False;
-exit;
-end;
-// write code here  FWebsocketBuffer.Clear;
-FWebsocketBuffer.write(Adata[0 + Position], MIN_WEBSOCKETSIZE);
-end
-else
-// если ждем продолжение пакетаbegin
-// Запишем в буфер недостающий набор данных
-// получим сколь-ко же байт еще надо получить  tmp := FFrameSize - FSavedSize;
-if Amount < tmp then
-tmp := Amount;
-FWebsocketBuffer.write(AData[0 + Position], tmp);
-AMount := Amount - tmp;
-position := tmp;
-Mem := FWebsocketBuffer.Memory;
-FFrameSize := GetWebsocketFrameSize(Mem, FWebsocketBuffer.Size);
-FFrameSize := 0;
-end;
-}
-
-
-
-
-
-
-
-
-
 
 
 

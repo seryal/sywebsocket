@@ -9,7 +9,7 @@
         <Filename Value="testApp.lpr"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <CursorPos X="83" Y="13"/>
+        <CursorPos Y="17"/>
         <UsageCount Value="201"/>
       </Unit0>
       <Unit1>
@@ -18,8 +18,8 @@
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <TopLine Value="98"/>
-        <CursorPos X="25" Y="125"/>
+        <TopLine Value="154"/>
+        <CursorPos X="7" Y="179"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -28,110 +28,113 @@
         <Filename Value="sywebsocketserver.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="syWebSocketServer"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="108" Y="8"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="112"/>
+        <CursorPos Y="120"/>
         <UsageCount Value="201"/>
+        <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="syconnectedclient.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="156"/>
-        <CursorPos X="36" Y="172"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="170"/>
+        <CursorPos X="24" Y="180"/>
         <UsageCount Value="201"/>
+        <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="baseframe.pas"/>
-        <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="343"/>
-        <CursorPos Y="354"/>
-        <UsageCount Value="177"/>
+        <TopLine Value="379"/>
+        <CursorPos X="53" Y="402"/>
+        <UsageCount Value="192"/>
         <Bookmarks Count="1">
           <Item0 Y="364" ID="3"/>
         </Bookmarks>
       </Unit4>
       <Unit5>
-        <Filename Value="websocketframe.pas"/>
-        <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="113"/>
-        <CursorPos X="3" Y="88"/>
-        <UsageCount Value="131"/>
-      </Unit5>
-      <Unit6>
         <Filename Value="httpheader.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="30" Y="8"/>
-        <UsageCount Value="130"/>
-      </Unit6>
-      <Unit7>
+        <UsageCount Value="147"/>
+      </Unit5>
+      <Unit6>
         <Filename Value="websocpackmanager.pas"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="154"/>
+        <CursorPos X="45" Y="157"/>
+        <UsageCount Value="109"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="websocketframe.pas"/>
+        <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="107"/>
-        <CursorPos Y="117"/>
-        <UsageCount Value="92"/>
-        <Bookmarks Count="1">
-          <Item0 Y="28" ID="1"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="108"/>
+        <CursorPos Y="122"/>
+        <UsageCount Value="134"/>
+        <Bookmarks Count="2">
+          <Item0 Y="254" ID="2"/>
+          <Item1 Y="211" ID="1"/>
         </Bookmarks>
         <Loaded Value="True"/>
       </Unit7>
       <Unit8>
         <Filename Value="C:\Users\yus\AppData\Local\lazarus\onlinepackagemanager\packages\synapse40.1\blcksock.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="2601"/>
-        <CursorPos X="3" Y="2606"/>
-        <UsageCount Value="14"/>
+        <TopLine Value="2133"/>
+        <CursorPos Y="2148"/>
+        <UsageCount Value="12"/>
       </Unit8>
       <Unit9>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\classes\classesh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="965"/>
         <CursorPos X="15" Y="980"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="6"/>
       </Unit9>
       <Unit10>
         <Filename Value="C:\lazarus\components\sparta\generics\sparta_generics.pas"/>
         <UnitName Value="sparta_Generics"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="19" Y="9"/>
-        <UsageCount Value="1"/>
+        <UsageCount Value="9"/>
       </Unit10>
       <Unit11>
         <Filename Value="C:\lazarus\components\sparta\generics\source\generics.collections.pas"/>
         <UnitName Value="Generics.Collections"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="8"/>
       </Unit11>
       <Unit12>
         <Filename Value="C:\lazarus\lcl\include\control.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2896"/>
         <CursorPos Y="2913"/>
-        <UsageCount Value="1"/>
+        <UsageCount Value="9"/>
       </Unit12>
       <Unit13>
         <Filename Value="C:\lazarus\lcl\include\buttoncontrol.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="4"/>
         <CursorPos Y="22"/>
-        <UsageCount Value="1"/>
+        <UsageCount Value="9"/>
       </Unit13>
       <Unit14>
         <Filename Value="C:\lazarus\lcl\include\buttons.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="152"/>
         <CursorPos Y="170"/>
-        <UsageCount Value="1"/>
+        <UsageCount Value="9"/>
       </Unit14>
       <Unit15>
         <Filename Value="C:\Users\yus\AppData\Local\lazarus\onlinepackagemanager\packages\synapse40.1\sswin32.inc"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="3" Y="323"/>
-        <UsageCount Value="5"/>
+        <UsageCount Value="3"/>
       </Unit15>
       <Unit16>
         <Filename Value="C:\lazarus\components\lazutils\lazcollections.pas"/>
@@ -139,14 +142,14 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="28"/>
         <CursorPos X="11" Y="41"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="8"/>
       </Unit16>
       <Unit17>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\classes\streams.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="664"/>
         <CursorPos X="3" Y="667"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="1"/>
       </Unit17>
       <Unit18>
         <Filename Value="C:\lazarus\lcl\lclmessageglue.pas"/>
@@ -154,14 +157,14 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="122"/>
         <CursorPos Y="116"/>
-        <UsageCount Value="6"/>
+        <UsageCount Value="4"/>
       </Unit18>
       <Unit19>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\sysutilh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="89"/>
         <CursorPos X="4" Y="104"/>
-        <UsageCount Value="29"/>
+        <UsageCount Value="27"/>
       </Unit19>
     </Units>
     <OtherDefines Count="1">
@@ -169,124 +172,124 @@
     </OtherDefines>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="116" Column="26" TopLine="98"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="76" Column="103" TopLine="76"/>
       </Position1>
       <Position2>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="155" TopLine="139"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="78" TopLine="72"/>
       </Position2>
       <Position3>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="95" TopLine="81"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="79" TopLine="72"/>
       </Position3>
       <Position4>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="117" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="80" TopLine="72"/>
       </Position4>
       <Position5>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="119" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="81" TopLine="72"/>
       </Position5>
       <Position6>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="120" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="82" TopLine="81"/>
       </Position6>
       <Position7>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="117" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="83" TopLine="80"/>
       </Position7>
       <Position8>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="119" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="84" TopLine="78"/>
       </Position8>
       <Position9>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="120" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="85" TopLine="78"/>
       </Position9>
       <Position10>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="117" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="86" TopLine="78"/>
       </Position10>
       <Position11>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="119" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="87" TopLine="78"/>
       </Position11>
       <Position12>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="120" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="88" TopLine="78"/>
       </Position12>
       <Position13>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="117" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="89" TopLine="78"/>
       </Position13>
       <Position14>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="119" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="90" TopLine="78"/>
       </Position14>
       <Position15>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="120" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="91" TopLine="78"/>
       </Position15>
       <Position16>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="117" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="92" TopLine="78"/>
       </Position16>
       <Position17>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="119" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="93" TopLine="78"/>
       </Position17>
       <Position18>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="120" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="96" TopLine="78"/>
       </Position18>
       <Position19>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="117" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="97" TopLine="78"/>
       </Position19>
       <Position20>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="123" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="98" TopLine="78"/>
       </Position20>
       <Position21>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="124" Column="30" TopLine="102"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="99" TopLine="78"/>
       </Position21>
       <Position22>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="34" Column="19" TopLine="19"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="109" TopLine="103"/>
       </Position22>
       <Position23>
-        <Filename Value="main.pas"/>
-        <Caret Line="130" Column="28" TopLine="113"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="112" TopLine="103"/>
       </Position23>
       <Position24>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="113" TopLine="107"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="114" TopLine="103"/>
       </Position24>
       <Position25>
-        <Filename Value="main.pas"/>
-        <Caret Line="125" Column="25" TopLine="98"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="115" TopLine="103"/>
       </Position25>
       <Position26>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="113" TopLine="107"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="116" TopLine="103"/>
       </Position26>
       <Position27>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="115" TopLine="107"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="122" TopLine="103"/>
       </Position27>
       <Position28>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="116" TopLine="107"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="123" TopLine="103"/>
       </Position28>
       <Position29>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="117" TopLine="107"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="124" TopLine="103"/>
       </Position29>
       <Position30>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="113" TopLine="107"/>
+        <Filename Value="websocketframe.pas"/>
+        <Caret Line="76" TopLine="59"/>
       </Position30>
     </JumpHistory>
     <RunParams>
@@ -294,44 +297,4 @@
       <Modes Count="0" ActiveMode=""/>
     </RunParams>
   </ProjectSession>
-  <Debugging>
-    <BreakPoints Count="4">
-      <Item1>
-        <Kind Value="bpkSource"/>
-        <WatchScope Value="wpsLocal"/>
-        <WatchKind Value="wpkWrite"/>
-        <Source Value="syconnectedclient.pas"/>
-        <Line Value="173"/>
-      </Item1>
-      <Item2>
-        <Kind Value="bpkSource"/>
-        <WatchScope Value="wpsLocal"/>
-        <WatchKind Value="wpkWrite"/>
-        <Source Value="syconnectedclient.pas"/>
-        <Line Value="171"/>
-      </Item2>
-      <Item3>
-        <Kind Value="bpkSource"/>
-        <WatchScope Value="wpsLocal"/>
-        <WatchKind Value="wpkWrite"/>
-        <Source Value="websocpackmanager.pas"/>
-        <Line Value="113"/>
-      </Item3>
-      <Item4>
-        <Kind Value="bpkSource"/>
-        <WatchScope Value="wpsLocal"/>
-        <WatchKind Value="wpkWrite"/>
-        <Source Value="websocpackmanager.pas"/>
-        <Line Value="117"/>
-      </Item4>
-    </BreakPoints>
-    <Watches Count="2">
-      <Item1>
-        <Expression Value="Terminated"/>
-      </Item1>
-      <Item2>
-        <Expression Value="Arr^"/>
-      </Item2>
-    </Watches>
-  </Debugging>
 </CONFIG>

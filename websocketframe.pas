@@ -19,82 +19,152 @@ type
     optPong = 10);
 
 
-  { FWebsocketFrame }
 
-  { TWebsocketFrame }
+  { TBaseWebsocketMessage }
 
-  TWebsocketFrame = class
+  TBaseWebsocketMessage = class
   private
-    FFrameSize: integer;
-    FReason: word;
-    FSocket: TTCPBlockSocket;
+    FFin: boolean;
+    FMessageStr: string;
+    FRsv1: boolean;
+    FRsv2: boolean;
+    FRsv3: boolean;
     FOpCode: TOpcodeType;
     FMask: boolean;
-    FPayloadLen: int64;
+    FPayloadLen: QWord;
     FMaskValue: DWord;
-    FPayLoadBuffer: TMemoryStream;
-    FSendData: TMemoryStream;
-    FError: integer;
-    function GetMessageStr: string;
-    function GetPayloadData: Pointer;
-    function getSendData: Pointer;
+    FReason: word;
+    FFrame: TMemoryStream;
+    function GetFrame: TMemoryStream;
+    procedure SetFin(AValue: boolean);
+    procedure SetFrame(AValue: TMemoryStream);
+    procedure SetMask(AValue: boolean);
+    procedure SetMaskValue(AValue: DWord);
     procedure SetMessageStr(AValue: string);
+    procedure SetOpcode(AValue: TOpcodeType);
+    procedure SetPayloadLen(AValue: QWord);
   public
-    constructor Create(ATCPBlockSocket: TTCPBlockSocket);
+    // full received frame or for send
+    property Frame: TMemoryStream read GetFrame write SetFrame;
+    property Fin: boolean read FFin write SetFin;
+    property OpCode: TOpcodeType read FOpCode write SetOpcode;
+    property Mask: boolean read FMask write SetMask;
+    property PayloadLen: QWord read FPayloadLen write SetPayloadLen;
+    property MaskValue: DWord read FMaskValue write SetMaskValue;
+    property MessageStr: string read FMessageStr write SetMessageStr;
+    property Reason: Word read FReason write FReason;
     constructor Create;
     destructor Destroy; override;
-    procedure Start;
-    property PayloadLen: int64 read FPayloadLen;
-    property PayloadData: Pointer read GetPayloadData;
-    property Opcode: TOpcodeType read FOpCode write FOpCode;
-    property MessageStr: string read GetMessageStr write SetMessageStr;
-    property Mask: boolean read FMask write FMask;
-    property SendData: Pointer read getSendData;
-    property Stream: TMemoryStream read FPayLoadBuffer;
-    property FrameSize: integer read FFrameSize;
-    property Reason: word read FReason write FReason;
   end;
 
 implementation
 
-{ FWebsocketFrame }
+{ TBaseWebsocketMessage }
 
-function TWebsocketFrame.GetPayloadData: Pointer;
+
+procedure TBaseWebsocketMessage.SetFrame(AValue: TMemoryStream);
+var
+  Arr: TBytes;
+  i: integer;
+  _Payload7: byte;
+  _Payload16: word;
+  _Payload64: QWord;
+  ustr: UTF8String;
+  pos: integer;
+  b: ^byte;
 begin
-  if FPayloadLen > 0 then
-    Result := FPayLoadBuffer.Memory;
+  if FFrame = AValue then
+    Exit;
+  if assigned(FFrame) then
+    FreeAndNil(FFrame);
+  FFrame := AValue;
+  setlength(Arr, FFrame.Size);
+  FFrame.Position := 0;
+  FFrame.ReadBuffer(arr[0], FFrame.Size);
+  FFin := (Arr[0] and 128) = 128;
+  FRsv1 := (Arr[0] and 64) = 64;
+  FRsv2 := (Arr[0] and 32) = 32;
+  FRsv3 := (Arr[0] and 16) = 16;
+  FOpCode := TOpcodeType(Arr[0] and 15);
+  FMask := (Arr[1] and 128) = 128;
+  _Payload7 := Arr[1] and 127;
+  FPayloadLen := _Payload7;
+  pos := 2;
+  case _PayLoad7 of
+    126:
+    begin
+      Move(Arr[2], _Payload16, 2);
+      _Payload16 := SwapEndian(_Payload16);
+      FPayloadLen := _Payload16;
+      pos := 4;
+    end;
+    127:
+    begin
+      Move(Arr[2], _Payload64, 8);
+      _Payload64 := SwapEndian(_Payload64);
+      FPayloadLen := _Payload64;
+      pos := 10;
+    end;
+  end;
+  if FPayloadLen = 0 then
+    exit;
+
+  if FMask then
+  begin
+    move(arr[pos], FMaskValue, 4);
+    pos := pos + 4;
+    for i := 0 to FPayloadLen - 1 do
+      arr[pos + i] := arr[pos + i] xor ((FMaskValue shr ((i mod 4) * 8)) and $FF);
+  end;
+  case OpCode of
+    optText:
+    begin
+      SetLength(ustr, FPayloadLen);
+      Move(Arr[pos], ustr[1], FPayloadLen);
+      FMessageStr := ustr;
+    end;
+  end;
 end;
 
-function TWebsocketFrame.getSendData: Pointer;
+procedure TBaseWebsocketMessage.SetMask(AValue: boolean);
 begin
-  Result := FSendData.Memory;
+  if FMask = AValue then
+    Exit;
+  FMask := AValue;
 end;
 
-procedure TWebsocketFrame.SetMessageStr(AValue: string);
+procedure TBaseWebsocketMessage.SetMaskValue(AValue: DWord);
+begin
+  if FMaskValue = AValue then
+    Exit;
+  FMaskValue := AValue;
+end;
+
+procedure TBaseWebsocketMessage.SetMessageStr(AValue: string);
 type
   THeadBuffer = array[0..13] of byte;
 var
-  len: integer;
-  HeadBuffer: ^THeadBuffer;
-  len7: byte;
+  ustr: UTF8String;
   len16: word;
   len64: QWord;
   fullsize: integer;
   plType: byte;
-  str: UTF8String;
-  ///
+  HeadBuffer: ^THeadBuffer;
   tmp: ^THeadBuffer;
 begin
-  str := AValue;
-  len := length(str);
-  fullsize := len + 2;
+  FMessageStr := AValue;
+  // forming websocket frame for send
+  ustr := AValue;
+  FPayloadLen := Length(ustr);
+  //  len := 2;
+  fullsize := FPayloadLen + 2;
   pltype := 1;
-  if len > 125 then
+  if FPayloadLen > 125 then
   begin
     fullsize := fullsize + 2;
     pltype := 2;
   end;
-  if len > High(word) then
+  if FPayloadLen > High(word) then
   begin
     fullsize := fullsize + 6;
     plType := 3;
@@ -102,174 +172,87 @@ begin
 
   if opcode = optCloseConnect then
   begin
-    SetLength(str, len + 2);
-    str[2] := chr(FReason and $FF);
-    str[1] := chr((FReason and $FF00) shr 8);
-    if len > 0 then
-      move(AValue[1], str[3], len);
-    len := len + 2;
+    SetLength(ustr, FPayloadLen + 2);
+    ustr[2] := chr(FReason and $FF);
+    ustr[1] := chr((FReason and $FF00) shr 8);
+    if FPayloadLen > 0 then
+      move(FMessageStr[1], ustr[3], FPayloadLen);
+    FPayloadLen := FPayloadLen + 2;
     fullsize := fullsize + 2;
   end;
-
-
-  FSendData.SetSize(fullsize);
-  HeadBuffer := FSendData.Memory;
-  // set fin
+  FFrame.SetSize(fullsize);
+  HeadBuffer := FFrame.Memory;
   HeadBuffer^[0] := 128;
   HeadBuffer^[0] := HeadBuffer^[0] or integer(FOpcode);
   // set mask
   HeadBuffer^[1] := 0;
 
-
-
-  // set payloda len
   case plType of
     1:
     begin
-      HeadBuffer^[1] := HeadBuffer^[1] or len;
+      HeadBuffer^[1] := HeadBuffer^[1] or FPayloadLen;
     end;
     2:
     begin
-      len16 := len;
+      len16 := FPayloadLen;
       len16 := SwapEndian(len16);
       HeadBuffer^[1] := 126;
       move(len16, HeadBuffer^[2], 2);
     end;
     3:
     begin
-      len64 := len;
+      len64 := FPayloadLen;
       len64 := SwapEndian(len64);
       HeadBuffer^[1] := 127;
       move(len64, HeadBuffer^[2], 8);
     end;
   end;
-
-  FSendData.Position := fullsize - len;
-  FFrameSize := fullsize;
-  if len = 0 then
+  FFrame.Position := fullsize - FPayloadLen;
+  if FPayloadLen = 0 then
     exit;
-  len := FSendData.Write(str[1], len);
-  len := FSendData.Size;
-  tmp := FSendData.Memory;
-  len := 0;
-  FSendData.Position := 0;
+  FPayloadLen := FFrame.Write(ustr[1], FPayloadLen);
 end;
 
-function TWebsocketFrame.GetMessageStr: string;
-var
-  str: UTF8String;
+procedure TBaseWebsocketMessage.SetOpcode(AValue: TOpcodeType);
 begin
-  Result := '';
-  if PayloadLen = 0 then
-    exit;
-  SetLength(str, PayloadLen);
-  Move(FPayLoadBuffer.Memory^, str[1], PayloadLen);
-  Result := str;
+  if FOpCode = AValue then
+    Exit;
+  FOpCode := AValue;
 end;
 
-constructor TWebsocketFrame.Create(ATCPBlockSocket: TTCPBlockSocket);
+procedure TBaseWebsocketMessage.SetPayloadLen(AValue: QWord);
 begin
-  inherited Create;
-  FSocket := ATCPBlockSocket;
-  FPayLoadBuffer := TMemoryStream.Create;
+  if FPayloadLen = AValue then
+    Exit;
+  FPayloadLen := AValue;
 end;
 
-constructor TWebsocketFrame.Create;
+constructor TBaseWebsocketMessage.Create;
 begin
-  FSendData := TMemoryStream.Create;
+  FFrame := TMemoryStream.Create;
 end;
 
-destructor TWebsocketFrame.Destroy;
+destructor TBaseWebsocketMessage.Destroy;
 begin
-  FreeAndNil(FSendData);
-  FreeAndNil(FPayLoadBuffer);
+  if assigned(FFrame) then
+    FreeAndNil(FFrame);
   inherited Destroy;
 end;
 
-procedure TWebsocketFrame.Start;
-type
-  tmparray = array [0..70000] of byte;
-var
-  HeadBuffer: array[0..13] of byte;
-  PayloadBuffer: Pointer;
-  dataLen7: byte;
-  dataLen16: word;
-  dataLen64: QWord;
-  fin: boolean;
-  offset: integer;
-  mval: DWORD;
-  headerSize: byte;
-  i, r: integer;
-  b: ^byte;
-  len: integer;
-  // { TODO : remove this }
-  tmp: ^tmparray;
-  ///
+function TBaseWebsocketMessage.GetFrame: TMemoryStream;
 begin
-  FError := 0;
-  offset := 0;
-  // read first 2 byte for get paylodalen and Flags
-  FSocket.RecvBuffer(@HeadBuffer[offset], 2);
-  // get opcode
-  FOpCode := TOpcodeType(HeadBuffer[offset] and %1111);
-  Inc(offset);
-  // get fin flag
-  fin := (HeadBuffer[offset] and 128) = 128;
-  dataLen7 := HeadBuffer[offset] and %1111111;
-  FMask := (HeadBuffer[offset] and 128) = 128;
-  Inc(offset);
-
-  FPayloadLen := dataLen7;
-  if datalen7 = 126 then
-  begin
-    FSocket.RecvBuffer(@HeadBuffer[offset], 2);
-    Move(HeadBuffer[offset], dataLen16, 2);
-    FPayloadLen := SwapEndian(dataLen16);
-    Inc(offset, 2);
-  end;
-  if datalen7 = 127 then
-  begin
-    FSocket.RecvBuffer(@HeadBuffer[offset], 8);
-    Move(HeadBuffer[offset], dataLen64, 8);
-    FPayloadLen := SwapEndian(dataLen64);
-    Inc(offset, 8);
-  end;
-
-  if Fmask then
-  begin
-    FSocket.RecvBuffer(@HeadBuffer[offset], 4);
-    move(HeadBuffer[offset], mval, 4);
-    FMaskValue := mval;//SwapEndian(mval);
-    Inc(offset, 4);
-  end;
-
-  headerSize := offset;
-
-  if FPayloadLen > 0 then
-  begin
-    FPayLoadBuffer.SetSize(FPayloadLen);
-    len := FSocket.RecvBuffer(FPayLoadBuffer.Memory, FPayloadLen);
-    b := FPayLoadBuffer.Memory;
-    for i := 0 to FPayloadLen - 1 do
-    begin
-      r := (FMaskValue shr ((i mod 4) * 8)) and $FF;
-      //      FPayLoadBuffer.ReadByte;
-      b^ := b^ xor r;
-      Inc(b);
-    end;
-    tmp := FPayLoadBuffer.Memory;
-    i := 0;
-  end
-  else
-    FPayLoadBuffer.Clear;
-
-
-  // not forget update if fin = false
+  Result := FFrame;
 end;
 
+procedure TBaseWebsocketMessage.SetFin(AValue: boolean);
+begin
+  if FFin = AValue then
+    Exit;
+  FFin := AValue;
+end;
+
+
 end.
-
-
 
 
 

@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  syWebSocketServer, syconnectedclient, baseframe, lclintf, websocpackmanager;
+  syWebSocketServer, syconnectedclient, websocketframe, lclintf, websocpackmanager;
 
 type
 
@@ -92,6 +92,8 @@ procedure TForm1.Button2Click(Sender: TObject);
 var
   ws: TWebsockPackManager;
   arr: TBytes;
+  i: integer;
+  mem: TMemoryStream;
 begin
   ws := TWebsockPackManager.Create;
 
@@ -116,15 +118,26 @@ begin
 
   arr[12] := 129;                         //2
   arr[13] := 6;                       //2
-  arr[14] := 1;
-  arr[15] := 2;                       //3
-  arr[16] := 3;
-  arr[17] := 4;
-  arr[18] := 5;                       //3
-  arr[19] := 6;
-  ws.InsertData2(arr, 20);
+  ws.InsertData(arr, 14);
+  arr[0] := 1;
+  ws.InsertData(arr, 1);
+  arr[0] := 2;                       //3
+  ws.InsertData(arr, 1);
+  arr[0] := 3;
+  arr[1] := 4;
+  ws.InsertData(arr, 2);
+  arr[0] := 5;                       //3
+  arr[1] := 6;
+  ws.InsertData(arr, 2);
 
-
+  while ws.Count > 0 do
+  begin
+    mem := ws.Pop;
+    i := mem.Size;
+    mem.free;
+  end;
+  // work with mem
+  //FreeAndNil(mem);
 
   ws.Free;
 
@@ -163,7 +176,7 @@ begin
       TsyConnectedClient(val.Sender).SendMessageFrame(val.Message);
       Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Message Len ' + IntToStr(length(val.Message)));
       //      Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Message Len ' + val.Message);
-      //      TsyConnectedClient(val.Sender).SendCloseFrame(1000, '');
+      TsyConnectedClient(val.Sender).SendCloseFrame(1000, '');
     end;
   end;
   // Verifying that the main thread does not stop the worker thread

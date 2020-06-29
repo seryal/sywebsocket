@@ -113,7 +113,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="7">
       <Unit0>
         <Filename Value="testApp.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -135,21 +135,17 @@
         <IsPartOfProject Value="True"/>
       </Unit3>
       <Unit4>
-        <Filename Value="baseframe.pas"/>
+        <Filename Value="httpheader.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit4>
       <Unit5>
-        <Filename Value="websocketframe.pas"/>
+        <Filename Value="websocpackmanager.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit5>
       <Unit6>
-        <Filename Value="httpheader.pas"/>
+        <Filename Value="websocketframe.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit6>
-      <Unit7>
-        <Filename Value="websocpackmanager.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit7>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

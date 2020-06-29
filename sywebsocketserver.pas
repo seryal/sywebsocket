@@ -5,7 +5,7 @@ unit syWebSocketServer;
 interface
 
 uses
-  Classes, SysUtils, blcksock, synsock, syconnectedclient, Generics.Collections, sylogevent, lazCollections, baseframe;
+  Classes, SysUtils, blcksock, synsock, syconnectedclient, Generics.Collections, sylogevent, lazCollections, websocketframe;
 
 type
 
@@ -16,7 +16,7 @@ type
     Opcode: TOpcodeType;
     Reason: integer;
     Message: string;
-    BinaryData: TDynamicByteArray;
+    BinaryData: TBytes;
     Sender: TsyConnectedClient;
   end;
 
@@ -36,7 +36,7 @@ type
     FOnTextMessage: TNotifyEvent;
     FOnBinData: TNotifyEvent;
     FOnCloseConnection: TNotifyEvent;
-    procedure OnClientBinaryData(Sender: TObject; BinData: TDynamicByteArray);
+    procedure OnClientBinaryData(Sender: TObject; BinData: TBytes);
     procedure OnClientClose(Sender: TObject; Reason: integer; Message: string);
     procedure OnClientPing(Sender: TObject; Message: string);
     procedure OnClientTextMessage(Sender: TObject; Message: string);
@@ -166,7 +166,8 @@ begin
   Queue(@PingMessageNotify);
 end;
 
-procedure TsyWebSocketServer.OnClientBinaryData(Sender: TObject; BinData: TDynamicByteArray);
+procedure TsyWebSocketServer.OnClientBinaryData(Sender: TObject; BinData: TBytes
+  );
 var
   MsgRec: TMessageRecord;
 begin
@@ -241,7 +242,7 @@ begin
         Client.OnTerminate := @OnTerminate;
         Client.OnClientTextMessage := @OnClientTextMessage;
         Client.OnClientClose := @OnClientClose;
-//        Client.OnClientBinaryData := @OnClientBinaryData;
+        //        Client.OnClientBinaryData := @OnClientBinaryData;
         Client.OnClientPing := @OnClientPing;
         Client.Tag := FClientCount;
         Inc(FClientCount);
