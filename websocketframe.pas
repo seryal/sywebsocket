@@ -50,6 +50,7 @@ type
     property MessageStr: string read GetMessageStr write SetMessageStr;
     property Mask: boolean read FMask write FMask;
     property SendData: Pointer read getSendData;
+    property Stream: TMemoryStream read FPayLoadBuffer;
     property FrameSize: integer read FFrameSize;
     property Reason: word read FReason write FReason;
   end;
@@ -81,6 +82,8 @@ var
   fullsize: integer;
   plType: byte;
   str: UTF8String;
+  ///
+  tmp: ^THeadBuffer;
 begin
   str := AValue;
   len := length(str);
@@ -147,7 +150,9 @@ begin
     exit;
   len := FSendData.Write(str[1], len);
   len := FSendData.Size;
+  tmp := FSendData.Memory;
   len := 0;
+  FSendData.Position := 0;
 end;
 
 function TWebsocketFrame.GetMessageStr: string;
@@ -182,6 +187,8 @@ begin
 end;
 
 procedure TWebsocketFrame.Start;
+type
+  tmparray = array [0..70000] of byte;
 var
   HeadBuffer: array[0..13] of byte;
   PayloadBuffer: Pointer;
@@ -194,6 +201,10 @@ var
   headerSize: byte;
   i, r: integer;
   b: ^byte;
+  len: integer;
+  // { TODO : remove this }
+  tmp: ^tmparray;
+  ///
 begin
   FError := 0;
   offset := 0;
@@ -237,7 +248,7 @@ begin
   if FPayloadLen > 0 then
   begin
     FPayLoadBuffer.SetSize(FPayloadLen);
-    FSocket.RecvBuffer(FPayLoadBuffer.Memory, FPayloadLen);
+    len := FSocket.RecvBuffer(FPayLoadBuffer.Memory, FPayloadLen);
     b := FPayLoadBuffer.Memory;
     for i := 0 to FPayloadLen - 1 do
     begin
@@ -246,10 +257,13 @@ begin
       b^ := b^ xor r;
       Inc(b);
     end;
-
+    tmp := FPayLoadBuffer.Memory;
+    i := 0;
   end
   else
     FPayLoadBuffer.Clear;
+
+
   // not forget update if fin = false
 end;
 

@@ -5,7 +5,7 @@ unit syconnectedclient;
 interface
 
 uses
-  Classes, SysUtils, blcksock, synautil, synsock, ssl_openssl, sylogevent, sha1, base64, websocketframe, httpheader;
+  Classes, SysUtils, blcksock, synautil, synsock, ssl_openssl, sylogevent, sha1, base64, websocpackmanager, httpheader;
 
 const
   TIMEOUT = 10000;
@@ -34,7 +34,7 @@ type
     FTag: integer;
     FCookie: string;
     //FBaseFrame: TBaseFrame;
-    FWebsocketFrame: TWebsocketFrame;
+    FWebsocketFrame: TWebsockPackManager;
     function MyEncodeBase64(sha1: TSHA1Digest): string;
     procedure Execute; override;
     procedure OnMonitor(Sender: TObject; Writing: boolean; const Buffer: TMemory; Len: integer);
@@ -43,7 +43,7 @@ type
     procedure SendHTTPAnswer;
     procedure SendHandShake(ASecWebSocketKey: string);
     function GetWebSocketKey(AHeader: TStringList): string;
-    procedure DataProcessing(AWebsocketFrame: TWebsocketFrame);
+    //    procedure DataProcessing(AWebsocketFrame: TWebsocketFrame);
 
   public
     constructor Create(hSock: TSocket);
@@ -98,7 +98,10 @@ var
   s: string;
   HTTPRec: THTTPRecord;
   Header: TStringList;
-  //  HeaderBuf: array [0..1000] of byte;
+
+  DataBuffer: TBytes;
+  DataLen: integer;
+  RcvLen: integer;
 
 begin
   FSock.OnMonitor := @OnMonitor;
@@ -151,17 +154,32 @@ begin
   end;
   if FHandShake then
   begin
-    FWebsocketFrame := TWebsocketFrame.Create(FSock);
+    FWebsocketFrame := TWebsockPackManager.Create();
     try
       // Websocket Loop
       while not Terminated do
       begin
-        // get data from websocket
+        // get data from socket
+        if FSock.CanRead(1000) then
+        begin
+          syLog.Info('Read Data');
+          DataLen := FSock.WaitingData;
+          if DataLen = 0 then
+            exit;
+          SetLength(DataBuffer, DataLen);
+          RcvLen := FSock.RecvBuffer(@DataBuffer[0], DataLen);
+          if RcvLen <> DataLen then // need raise exception
+            Exit;
+          FWebsocketFrame.InsertData2(DataBuffer, RcvLen);
+          SetLength(DataBuffer, 0);
+        end;
+        {
         FWebsocketFrame.Start;
         if FSock.LastError <> 0 then
           exit;
         // manipulate with Data
         DataProcessing(FWebsocketFrame);
+        }
       end;
     finally
       FreeAndNil(FWebsocketFrame);
@@ -298,8 +316,9 @@ begin
   end;
 end;
 
-procedure TsyConnectedClient.DataProcessing(AWebsocketFrame: TWebsocketFrame);
+{procedure TsyConnectedClient.DataProcessing(AWebsocketFrame: TWebsocketFrame);
 begin
+  sylog.Log('Start Data processing');
   case AWebsocketFrame.Opcode of
     optText:
     begin
@@ -307,7 +326,9 @@ begin
         OnClientTextMessage(Self, AWebsocketFrame.MessageStr);
     end;
   end;
+  sylog.Log('End Data processing');
 end;
+}
 
 constructor TsyConnectedClient.Create(hSock: TSocket);
 begin
@@ -338,11 +359,11 @@ begin
 end;
 
 procedure TsyConnectedClient.SendCloseFrame(AReason: integer; AMessage: string);
-var
-  WFrame: TWebsocketFrame;
-  len: integer;
+//var
+//  WFrame: TWebsocketFrame;
+//  len: integer;
 begin
-  syLog.Info('Send Close Frame');
+ { syLog.Info('Send Close Frame');
   ;
   EnterCriticalsection(FCritSection);
   try
@@ -361,15 +382,18 @@ begin
   finally
     LeaveCriticalsection(FCritSection);
   end;
-  TerminateThread;
+  TerminateThread;  }
 end;
 
 procedure TsyConnectedClient.SendMessageFrame(AMessage: string);
-var
-  WFrame: TWebsocketFrame;
-  len: integer;
+//type
+//  d = array [0..70000] of byte;
+//var
+//  WFrame: TWebsocketFrame;
+//  len: integer;
+//  m: ^d;
 begin
-  syLog.Info('Send Message');
+{  syLog.Info('Send Message');
   EnterCriticalsection(FCritSection);
   try
     len := Length(AMessage);
@@ -379,14 +403,18 @@ begin
       WFrame.Mask := False;
       WFrame.MessageStr := AMessage;
       if FSock.CanWrite(100) then
+        //FSock.SendStream(WFrame.Stream);
+      begin
+        m := WFrame.SendData;
         len := FSock.SendBuffer(WFrame.SendData, WFrame.FrameSize);
+      end;
       len := 0;
     finally
       FreeAndNil(WFrame);
     end;
   finally
     LeaveCriticalsection(FCritSection);
-  end;
+  end;    }
 end;
 
 {procedure TsyConnectedClient.SendBinaryFrame(ABinData: TDynamicByteArray);
@@ -458,7 +486,7 @@ begin
     HR_Connect:
       syLog.Info('HR_Connect');
     HR_CanRead:
-      syLog.Info('HR_CanRead');
+      syLog.Info('HR_CanRead ' + Value);
     HR_CanWrite:
       syLog.Info('HR_CanWrite');
     HR_Listen:
@@ -472,13 +500,15 @@ begin
     HR_Wait:
       syLog.Info('HR_Wait');
     HR_Error:
+    begin
       syLog.Info('HR_Error: ' + Value);
+      TerminateThread;
+    end;
   end;
 end;
 
 
 end.
-
 
 
 

@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  syWebSocketServer, syconnectedclient, baseframe, lclintf;
+  syWebSocketServer, syconnectedclient, baseframe, lclintf, websocpackmanager;
 
 type
 
@@ -16,6 +16,7 @@ type
     btnStart: TButton;
     btnStop: TButton;
     Button1: TButton;
+    Button2: TButton;
     Edit1: TEdit;
     Edit2: TEdit;
     Label1: TLabel;
@@ -23,6 +24,7 @@ type
     procedure btnStartClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure Label1Click(Sender: TObject);
@@ -84,6 +86,48 @@ begin
   finally
     FWebSocket.LockedClientList.UnlockList;
   end;
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+var
+  ws: TWebsockPackManager;
+  arr: TBytes;
+begin
+  ws := TWebsockPackManager.Create;
+
+  SetLength(arr, 20);
+
+  arr[0] := 129;
+  arr[1] := 0;                         //2
+
+  arr[2] := 193;                       //2
+  arr[3] := 0;
+
+  arr[4] := 225;                       //3
+  arr[5] := 1;
+  arr[6] := 1;
+
+  arr[7] := 241;                       //3
+  arr[8] := 1;
+  arr[9] := 1;
+
+  arr[10] := 129;
+  arr[11] := 0;
+
+  arr[12] := 129;                         //2
+  arr[13] := 6;                       //2
+  arr[14] := 1;
+  arr[15] := 2;                       //3
+  arr[16] := 3;
+  arr[17] := 4;
+  arr[18] := 5;                       //3
+  arr[19] := 6;
+  ws.InsertData2(arr, 20);
+
+
+
+  ws.Free;
+
 end;
 
 procedure TForm1.Edit2Change(Sender: TObject);
