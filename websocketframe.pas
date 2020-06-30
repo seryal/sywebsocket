@@ -20,9 +20,9 @@ type
 
 
 
-  { TBaseWebsocketMessage }
+  { TsyBaseWebsocketFrame }
 
-  TBaseWebsocketMessage = class
+  TsyBaseWebsocketFrame = class
   private
     FFin: boolean;
     FMessageStr: string;
@@ -59,19 +59,19 @@ type
     property MessageStr: string read GetMessageStr write SetMessageStr;
     property Reason: word read FReason write FReason;
     property Binary: TBytes read GetBinary write SetBinary;
-    property Rsv1: Boolean read FRsv1;
-    property Rsv2: Boolean read FRsv2;
-    property Rsv3: Boolean read FRsv3;
+    property Rsv1: boolean read FRsv1;
+    property Rsv2: boolean read FRsv2;
+    property Rsv3: boolean read FRsv3;
     constructor Create;
     destructor Destroy; override;
   end;
 
 implementation
 
-{ TBaseWebsocketMessage }
+{ TsyBaseWebsocketFrame }
 
 
-procedure TBaseWebsocketMessage.SetFrame(AValue: TMemoryStream);
+procedure TsyBaseWebsocketFrame.SetFrame(AValue: TMemoryStream);
 var
   Arr: TBytes;
   i: integer;
@@ -123,14 +123,11 @@ begin
     b := FFrame.Memory + pos;
     for i := 0 to FPayloadLen - 1 do
     begin
-      //      arr[pos + i] := arr[pos + i] xor ((FMaskValue shr ((i mod 4) * 8)) and $FF);
       b^ := b^ xor ((FMaskValue shr ((i mod 4) * 8)) and $FF);
       Inc(b);
     end;
   end;
-
   FHeaderLen := pos;
-
   case OpCode of
     optCloseConnect:
     begin
@@ -141,29 +138,26 @@ begin
         FFrame.ReadBuffer(Freason, 2);
         FReason := SwapEndian(FReason);
         FHeaderLen := FHeaderLen + 2;
-
       end;
-
     end;
   end;
-
 end;
 
-procedure TBaseWebsocketMessage.SetMask(AValue: boolean);
+procedure TsyBaseWebsocketFrame.SetMask(AValue: boolean);
 begin
   if FMask = AValue then
     Exit;
   FMask := AValue;
 end;
 
-procedure TBaseWebsocketMessage.SetMaskValue(AValue: DWord);
+procedure TsyBaseWebsocketFrame.SetMaskValue(AValue: DWord);
 begin
   if FMaskValue = AValue then
     Exit;
   FMaskValue := AValue;
 end;
 
-procedure TBaseWebsocketMessage.SetMessageStr(AValue: string);
+procedure TsyBaseWebsocketFrame.SetMessageStr(AValue: string);
 type
   THeadBuffer = array[0..13] of byte;
 var
@@ -191,38 +185,38 @@ begin
   SetBinary(Buffer);
 end;
 
-procedure TBaseWebsocketMessage.SetOpcode(AValue: TOpcodeType);
+procedure TsyBaseWebsocketFrame.SetOpcode(AValue: TOpcodeType);
 begin
   if FOpCode = AValue then
     Exit;
   FOpCode := AValue;
 end;
 
-procedure TBaseWebsocketMessage.SetPayloadLen(AValue: QWord);
+procedure TsyBaseWebsocketFrame.SetPayloadLen(AValue: QWord);
 begin
   if FPayloadLen = AValue then
     Exit;
   FPayloadLen := AValue;
 end;
 
-constructor TBaseWebsocketMessage.Create;
+constructor TsyBaseWebsocketFrame.Create;
 begin
   FFrame := TMemoryStream.Create;
 end;
 
-destructor TBaseWebsocketMessage.Destroy;
+destructor TsyBaseWebsocketFrame.Destroy;
 begin
   if assigned(FFrame) then
     FreeAndNil(FFrame);
   inherited Destroy;
 end;
 
-function TBaseWebsocketMessage.GetFrame: TMemoryStream;
+function TsyBaseWebsocketFrame.GetFrame: TMemoryStream;
 begin
   Result := FFrame;
 end;
 
-function TBaseWebsocketMessage.GetMessageStr: string;
+function TsyBaseWebsocketFrame.GetMessageStr: string;
 var
   ustr: UTF8String;
 begin
@@ -236,20 +230,18 @@ begin
   end;
 end;
 
-function TBaseWebsocketMessage.GetBinary: TBytes;
+function TsyBaseWebsocketFrame.GetBinary: TBytes;
 begin
-  //  Result := FFrame.Memory + FHeaderLen;
   SetLength(Result, FPayloadLen);
   if FPayloadLen > 0 then
   begin
     FFrame.Position := FHeaderLen;
     FFrame.ReadBuffer(Result[0], FPayloadLen);
     SetLength(Result, FPayloadLen);
-
   end;
 end;
 
-procedure TBaseWebsocketMessage.SetBinary(AValue: TBytes);
+procedure TsyBaseWebsocketFrame.SetBinary(AValue: TBytes);
 type
   THeadBuffer = array[0..13] of byte;
 var
@@ -316,7 +308,7 @@ begin
   //  HeadBuffer := FFrame.Memory;
 end;
 
-procedure TBaseWebsocketMessage.SetFin(AValue: boolean);
+procedure TsyBaseWebsocketFrame.SetFin(AValue: boolean);
 begin
   if FFin = AValue then
     Exit;

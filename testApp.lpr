@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, main, syWebSocketServer, syconnectedclient,
-  httpheader, websocpackmanager, websocketframe;
+  httpheader, websocpackmanager, websocketframe, websocketmessage;
 
 {$R *.res}
 
