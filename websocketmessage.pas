@@ -5,7 +5,7 @@ unit websocketmessage;
 interface
 
 uses
-  Classes, SysUtils, websocketframe;
+  Classes, SysUtils, websocketframe, LazUTF8;
 
 type
 
@@ -64,6 +64,7 @@ begin
     //    FData.Seek(0, soBeginning);
     FData.Position := 0;
     FData.ReadBuffer(ustr[1], len);
+
     Result := ustr;
   end;
 end;
@@ -77,25 +78,35 @@ function TsyWebSocketMessage.AddData(AFrame: TsyBaseWebsocketFrame): boolean;
 begin
   Result := True;
   FReason := AFrame.Reason;
-  FIsReady := AFrame.Fin;
+
+{  if (not FIsReady) and (AFrame.OpCode <> optContinue) then // only optContinue if we wait next frame;
+  begin
+    Result := False;
+    exit;
+  end;}
+
   case AFrame.OpCode of
     optContinue:
     begin
+      if FIsReady then   // if first frame continue then HALT
+      begin
+        Result := False;
+        exit;
+      end;
+      FIsReady := AFrame.Fin;
       if AFrame.PayloadLen > 0 then
         FData.Write(AFrame.Binary[0], AFrame.PayloadLen);
     end;
-    optText, optBinary, optCloseConnect:
+    optText, optBinary:
     begin
+      if not FIsReady then
+      begin
+        Result := False;
+        exit;
+      end;
+      FIsReady := AFrame.Fin;
       FMessageType := AFrame.OpCode;
       FData.Clear;
-      if AFrame.PayloadLen > 0 then
-        FData.Write(AFrame.Binary[0], AFrame.PayloadLen);
-    end;
-    optPing, optPong:
-    begin
-      FMessageType := AFrame.OpCode;
-      if not AFrame.Fin then
-        Result := False;
       if AFrame.PayloadLen > 0 then
         FData.Write(AFrame.Binary[0], AFrame.PayloadLen);
     end;

@@ -278,45 +278,74 @@ begin
               Exit;
             end;
 
-            // Copy Payload data to TsyWebsocketMessage
-            if not wsMessage.AddData(wsFrame) then
-              exit;  // critical error - Disconnect;
+
+            case wsFrame.Opcode of
+              optPing, optPong, optCloseConnect: // not fragmented frame
+              begin
+                case wsFrame.OpCode of
+                  optPing:
+                  begin
+                    if wsFrame.PayloadLen > 125 then // payload <=125
+                    begin
+                      SendCloseFrame(1002, '');
+                      exit;
+                    end;
+                    if not wsFrame.Fin then   // no fragmentation
+                    begin
+                      SendCloseFrame(1002, '');
+                      exit;
+                    end;
+                    if Assigned(OnClientPing) then
+                    begin
+                      SendPong(wsFrame.MessageStr);
+                      OnClientPing(self, wsFrame.MessageStr);
+                    end;
+                  end;
+                  optPong: // we can not send ping. And if we get Pong we disconnect
+                  begin
+                    if not wsFrame.Fin then   // no fragmentation
+                    begin
+                      SendCloseFrame(1002, '');
+                      exit;
+                    end;
+                  end;
+                  optCloseConnect:
+                  begin
+                    SendCloseFrame(wsFrame.Reason, wsFrame.MessageStr);
+                    Exit;
+                  end;
+
+                end;
+
+              end;
+              optText, optBinary, optContinue: // fragmented frame
+              begin
+                // Copy Payload data to TsyWebsocketMessage
+
+                if not wsMessage.AddData(wsFrame) then
+                  exit;  // critical error - Disconnect;
+//                tmp_s := wsMessage.MessageStr;
+                if wsMessage.IsReady then
+                begin
+                  //DataBuffer := wsFrame.Binary;
+                  case wsMessage.MessageType of
+                    optText: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
+                      if Assigned(OnClientTextMessage) then
+                        OnClientTextMessage(Self, wsMessage.MessageStr);
+                    optBinary: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
+                      if Assigned(OnClientBinaryData) then
+                        OnClientBinaryData(Self, wsMessage.BinData);
+                  end;
+                end;
+
+              end;
+            end;
+
+
 
             // if FIN = false then wait frame with optContinue and add Payload Data to TsyWebSocketMessage
             // if
-            if wsMessage.IsReady then
-            begin
-              tmp_s := wsMessage.MessageStr;
-              //DataBuffer := wsFrame.Binary;
-              case wsMessage.MessageType of
-                optText: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
-                  if Assigned(OnClientTextMessage) then
-                    OnClientTextMessage(Self, wsMessage.MessageStr);
-                optBinary: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
-                  if Assigned(OnClientBinaryData) then
-                    OnClientBinaryData(Self, wsMessage.BinData);
-                optPing:
-                begin
-                  if wsMessage.PayloadLen > 125 then
-                  begin
-                    SendCloseFrame(1002, '');
-                    exit;
-                  end;
 
-                  if Assigned(OnClientPing) then
-                  begin
-                    SendPong(wsMessage.MessageStr);
-                    OnClientPing(self, wsMessage.MessageStr);
-                  end;
-                end;
-                optPong: // we can not send ping. And if we get Pong we disconnect
-                begin
-                  exit;
-                end;
-                optCloseConnect:
-                  SendCloseFrame(wsFrame.Reason, wsFrame.MessageStr);
-              end;
-            end;
           finally
             FreeAndNil(wsFrame);
           end;
@@ -493,6 +522,7 @@ end;
 
 
 end.
+
 
 
 

@@ -50,10 +50,7 @@ type
     constructor Create(APort: integer);
     destructor Destroy; override;
     procedure Execute; override;
-    property OnTextMessage: TNotifyEvent read FOnTextMessage write FOnTextMessage;
-    property OnCloseConnection: TNotifyEvent read FOnCloseConnection write FOnCloseConnection;
-    property OnBinData: TNotifyEvent read FOnBinData write FOnBinData;
-    property OnPing: TNotifyEvent read FOnPing write FOnPing;
+    property OnMessage: TNotifyEvent read FOnTextMessage write FOnTextMessage;
     property MessageQueue: TMessageQueue read FMessageQueue;
     property LockedClientList: TLockedClientList read FLockedClientList;
   end;
@@ -83,24 +80,24 @@ procedure TsyWebSocketServer.TextMessageNotify;
 begin
   if Terminated then
     exit;
-  if Assigned(OnTextMessage) then
-    OnTextMessage(self);
+  if Assigned(OnMessage) then
+    OnMessage(self);
 end;
 
 procedure TsyWebSocketServer.CloseConnectionNotify;
 begin
   if Terminated then
     exit;
-  if Assigned(OnCloseConnection) then
-    OnCloseConnection(self);
+  if Assigned(OnMessage) then
+    OnMessage(self);
 end;
 
 procedure TsyWebSocketServer.BinDataNotify;
 begin
   if Terminated then
     exit;
-  if Assigned(OnBinData) then
-    OnBinData(self);
+  if Assigned(OnMessage) then
+    OnMessage(self);
 
 end;
 
@@ -108,8 +105,8 @@ procedure TsyWebSocketServer.PingMessageNotify;
 begin
   if Terminated then
     exit;
-  if Assigned(OnPing) then
-    OnPing(self);
+  if Assigned(OnMessage) then
+    OnMessage(self);
 end;
 
 procedure TsyWebSocketServer.OnClientTextMessage(Sender: TObject; Message: string);
@@ -166,8 +163,8 @@ begin
   Queue(@PingMessageNotify);
 end;
 
-procedure TsyWebSocketServer.OnClientBinaryData(Sender: TObject; BinData: TBytes
-  );
+procedure TsyWebSocketServer.OnClientBinaryData(Sender: TObject; BinData: TBytes);
+
 var
   MsgRec: TMessageRecord;
 begin
