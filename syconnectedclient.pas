@@ -175,12 +175,20 @@ begin
             try
               wsMessage.Frame := RcvFrame;
 
+
               // if set RSV1-RSV3 bit disconnect with error code 1002
               if wsMessage.Rsv1 or wsMessage.Rsv2 or wsMessage.Rsv3 then
               begin
                 SendCloseFrame(1002, '');
                 Exit;
               end;
+
+              if ((wsMessage.OpCode >optBinary) and (wsMessage.OpCode < optCloseConnect)) or (wsMessage.OpCode > optPong) then
+              begin
+                SendCloseFrame(1002, '');
+                Exit;
+              end;
+
 
               //DataBuffer := wsMessage.Binary;
               case wsMessage.OpCode of

@@ -18,9 +18,8 @@
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <TopLine Value="103"/>
-        <CursorPos X="46" Y="114"/>
+        <CursorPos X="28" Y="110"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -29,8 +28,8 @@
         <Filename Value="sywebsocketserver.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="syWebSocketServer"/>
-        <EditorIndex Value="3"/>
-        <TopLine Value="118"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="117"/>
         <CursorPos Y="113"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
@@ -38,9 +37,10 @@
       <Unit3>
         <Filename Value="syconnectedclient.pas"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="159"/>
-        <CursorPos Y="179"/>
+        <TopLine Value="174"/>
+        <CursorPos Y="186"/>
         <UsageCount Value="201"/>
         <Bookmarks Count="1">
           <Item0 Y="176" ID="9"/>
@@ -52,7 +52,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="30" Y="8"/>
-        <UsageCount Value="171"/>
+        <UsageCount Value="172"/>
       </Unit4>
       <Unit5>
         <Filename Value="websocpackmanager.pas"/>
@@ -60,15 +60,14 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="25"/>
         <CursorPos X="45" Y="157"/>
-        <UsageCount Value="133"/>
+        <UsageCount Value="134"/>
       </Unit5>
       <Unit6>
         <Filename Value="websocketframe.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="2"/>
-        <TopLine Value="140"/>
-        <CursorPos Y="153"/>
-        <UsageCount Value="158"/>
+        <EditorIndex Value="3"/>
+        <CursorPos X="2" Y="86"/>
+        <UsageCount Value="159"/>
         <Bookmarks Count="3">
           <Item0 X="2" Y="86" ID="2"/>
           <Item1 Y="247" ID="3"/>
@@ -169,124 +168,124 @@
     </OtherDefines>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="websocketframe.pas"/>
-        <Caret Line="153" TopLine="140"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="188" TopLine="171"/>
       </Position1>
       <Position2>
         <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="363" TopLine="351"/>
+        <Caret Line="189" TopLine="171"/>
       </Position2>
       <Position3>
         <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="364" TopLine="351"/>
+        <Caret Line="175" TopLine="170"/>
       </Position3>
       <Position4>
         <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="360" TopLine="351"/>
+        <Caret Line="171" TopLine="166"/>
       </Position4>
       <Position5>
         <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="365" TopLine="351"/>
+        <Caret Line="217" TopLine="205"/>
       </Position5>
       <Position6>
-        <Filename Value="main.pas"/>
-        <Caret Line="112" TopLine="101"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="156" TopLine="144"/>
       </Position6>
       <Position7>
         <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="365" TopLine="352"/>
+        <Caret Line="159" TopLine="150"/>
       </Position7>
       <Position8>
         <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="180" Column="25" TopLine="167"/>
+        <Caret Line="161" TopLine="150"/>
       </Position8>
       <Position9>
         <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="186" TopLine="167"/>
+        <Caret Line="162" TopLine="150"/>
       </Position9>
       <Position10>
         <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="188" TopLine="171"/>
+        <Caret Line="163" TopLine="150"/>
       </Position10>
       <Position11>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="189" TopLine="171"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="112" TopLine="101"/>
       </Position11>
       <Position12>
         <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="175" TopLine="170"/>
+        <Caret Line="180" Column="40" TopLine="159"/>
       </Position12>
       <Position13>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="171" TopLine="166"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="112" TopLine="101"/>
       </Position13>
       <Position14>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="217" TopLine="205"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="114" TopLine="101"/>
       </Position14>
       <Position15>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="156" TopLine="144"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="116" TopLine="101"/>
       </Position15>
       <Position16>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="159" TopLine="150"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="118" TopLine="101"/>
       </Position16>
       <Position17>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="161" TopLine="150"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="119" TopLine="101"/>
       </Position17>
       <Position18>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="162" TopLine="150"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="121" TopLine="101"/>
       </Position18>
       <Position19>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="163" TopLine="150"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="122" TopLine="101"/>
       </Position19>
       <Position20>
         <Filename Value="main.pas"/>
-        <Caret Line="112" TopLine="101"/>
+        <Caret Line="124" Column="71" TopLine="103"/>
       </Position20>
       <Position21>
         <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="180" Column="40" TopLine="159"/>
+        <Caret Line="179" TopLine="159"/>
       </Position21>
       <Position22>
-        <Filename Value="main.pas"/>
-        <Caret Line="112" TopLine="101"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="186" Column="51" TopLine="174"/>
       </Position22>
       <Position23>
-        <Filename Value="main.pas"/>
-        <Caret Line="114" TopLine="101"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="186" Column="50" TopLine="174"/>
       </Position23>
       <Position24>
-        <Filename Value="main.pas"/>
-        <Caret Line="116" TopLine="101"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="186" Column="36" TopLine="52"/>
       </Position24>
       <Position25>
-        <Filename Value="main.pas"/>
-        <Caret Line="118" TopLine="101"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="189" TopLine="173"/>
       </Position25>
       <Position26>
-        <Filename Value="main.pas"/>
-        <Caret Line="119" TopLine="101"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="186" Column="94" TopLine="174"/>
       </Position26>
       <Position27>
-        <Filename Value="main.pas"/>
-        <Caret Line="121" TopLine="101"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="181" Column="90" TopLine="174"/>
       </Position27>
       <Position28>
-        <Filename Value="main.pas"/>
-        <Caret Line="122" TopLine="101"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="186" TopLine="174"/>
       </Position28>
       <Position29>
-        <Filename Value="main.pas"/>
-        <Caret Line="124" Column="71" TopLine="103"/>
+        <Filename Value="syconnectedclient.pas"/>
+        <Caret Line="188" TopLine="174"/>
       </Position29>
       <Position30>
         <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="179" TopLine="159"/>
+        <Caret Line="186" Column="105" TopLine="174"/>
       </Position30>
     </JumpHistory>
     <RunParams>
