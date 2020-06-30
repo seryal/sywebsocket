@@ -36,7 +36,6 @@ type
     FWebsocketFrame: TWebsockPackManager;
     function MyEncodeBase64(sha1: TSHA1Digest): string;
     procedure Execute; override;
-    procedure OnMonitor(Sender: TObject; Writing: boolean; const Buffer: TMemory; Len: integer);
     procedure OnStatus(Sender: TObject; Reason: THookSocketReason; const Value: string);
     function IsWebSocketConnect(AHeader: TStringList): boolean;
     procedure SendHTTPAnswer;
@@ -102,7 +101,6 @@ var
   RcvFrame: TMemoryStream;
   wsMessage: TBaseWebsocketMessage;
 begin
-  FSock.OnMonitor := @OnMonitor;
   FSock.OnStatus := @OnStatus;
   FWebSocket := False;
   FHandShake := False;
@@ -174,18 +172,45 @@ begin
           begin
             RcvFrame := FWebsocketFrame.pop;
             wsMessage := TBaseWebsocketMessage.Create;
-            wsMessage.Frame := RcvFrame;
-            //DataBuffer := wsMessage.Binary;
-            case wsMessage.OpCode of
-              optText: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
-                if Assigned(OnClientTextMessage) then
-                  OnClientTextMessage(Self, wsMessage.MessageStr);
-              optBinary: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
-                if Assigned(OnClientBinaryData) then
-                  OnClientBinaryData(Self, wsMessage.Binary);
-            end;
+            try
+              wsMessage.Frame := RcvFrame;
 
-            wsMessage.Free;
+              // if set RSV1-RSV3 bit disconnect with error code 1002
+              if wsMessage.Rsv1 or wsMessage.Rsv2 or wsMessage.Rsv3 then
+              begin
+                SendCloseFrame(1002, '');
+                Exit;
+              end;
+
+              //DataBuffer := wsMessage.Binary;
+              case wsMessage.OpCode of
+                optText: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
+                  if Assigned(OnClientTextMessage) then
+                    OnClientTextMessage(Self, wsMessage.MessageStr);
+                optBinary: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
+                  if Assigned(OnClientBinaryData) then
+                    OnClientBinaryData(Self, wsMessage.Binary);
+                optPing:
+                begin
+                  if wsMessage.PayloadLen > 125 then
+                  begin
+                    SendCloseFrame(1002, '');
+                    exit;
+                  end;
+                  if Assigned(OnClientPing) then
+                  begin
+                    SendPong(wsMessage.MessageStr);
+                    OnClientPing(self, wsMessage.MessageStr);
+                  end;
+                end;
+                optCloseConnect:
+                  SendCloseFrame(wsMessage.Reason, wsMessage.MessageStr);
+              end;
+
+
+            finally
+              FreeAndNil(wsMessage);
+            end;
           end;
 
 
@@ -198,61 +223,6 @@ begin
   end;
   TerminateThread;
 end;
-
-procedure TsyConnectedClient.OnMonitor(Sender: TObject; Writing: boolean; const Buffer: TMemory; Len: integer);
-begin
-  if FHandShake then
-  begin
-    if Terminated then
-      exit;
-    if Writing then
-      exit;
-
-    // Необходимо вычислить полную длину приходящего пакета
-    syLog.Info('OnMonitor: ' + IntToStr(FSock.LastError));
-   {
-    try
-      FBaseFrame.Parse(Buffer, Len);
-      if FBaseFrame.Ready then
-        case FBaseFrame.Opcode of
-          optText: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
-            if Assigned(OnClientTextMessage) then
-              OnClientTextMessage(Self, FBaseFrame.MessageStr);
-          optCloseConnect: // if Close send OnClientClose to parent Thread about Close connection
-          begin
-            if Assigned(OnClientClose) then
-              OnClientClose(Self, FBaseFrame.Reason, FBaseFrame.MessageStr);
-          end;
-          optBinary:
-          begin
-            if assigned(OnClientBinaryData) then
-              OnClientBinaryData(Self, FBaseFrame.BinaryData);
-            syLog.Warning('OnMonitor Binary: ');
-          end;
-          optPing:
-          begin
-            if length(FBaseFrame.MessageStr) > 125 then
-            begin
-              SendCloseFrame(1002, '');
-              TerminateThread;
-              Exit;
-            end;
-            if Assigned(OnClientPing) then
-              OnClientPing(Self, FBaseFrame.MessageStr);
-            syLog.Warning('OnMonitor Ping: ');
-            SendPong(FBaseFrame.MessageStr);
-          end;
-          optPong:
-          begin
-            SendCloseFrame(1000, '');
-          end;
-        end;
-    except
-    end;
-       }
-  end;
-end;
-
 
 function TsyConnectedClient.IsWebSocketConnect(AHeader: TStringList): boolean;
 var
@@ -428,29 +398,25 @@ begin
 end;
 
 procedure TsyConnectedClient.SendPong(AMessage: string);
-///var
-//  BaseFrame: TBaseFrame;
-//  len: integer;
-//  dt: TDynamicByteArray;
+var
+  WFrame: TBaseWebsocketMessage;
 begin
-{  EnterCriticalsection(FCritSection);
+  EnterCriticalsection(FCritSection);
   try
-    len := Length(AMessage);
-    BaseFrame := TBaseFrame.Create;
+    syLog.Info('Send Pong');
+    WFrame := TBaseWebsocketMessage.Create;
     try
-      BaseFrame.Fin := True;
-      BaseFrame.Opcode := optPong;
-      BaseFrame.Mask := False;
-      BaseFrame.MessageStr := AMessage;
-      dt := BaseFrame.SendData;
-      len := Length(dt);
-      FSock.SendBuffer(@dt[0], len - 1);
+      WFrame.Opcode := optPong;
+      WFrame.Mask := False;
+      WFrame.MessageStr := AMessage;
+      if FSock.CanWrite(1000) then
+        FSock.SendBuffer(WFrame.Frame.Memory, WFrame.Frame.Size);
     finally
-      FreeAndNil(BaseFrame);
+      FreeAndNil(WFrame);
     end;
   finally
     LeaveCriticalsection(FCritSection);
-  end;   }
+  end;
 end;
 
 procedure TsyConnectedClient.OnStatus(Sender: TObject; Reason: THookSocketReason; const Value: string);

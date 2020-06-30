@@ -16,7 +16,6 @@ type
     btnStart: TButton;
     btnStop: TButton;
     Button1: TButton;
-    Button2: TButton;
     Edit1: TEdit;
     Edit2: TEdit;
     Label1: TLabel;
@@ -24,7 +23,6 @@ type
     procedure btnStartClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure Label1Click(Sender: TObject);
@@ -88,60 +86,7 @@ begin
   end;
 end;
 
-procedure TForm1.Button2Click(Sender: TObject);
-var
-  ws: TWebsockPackManager;
-  arr: TBytes;
-  i: integer;
-  mem: TMemoryStream;
-begin
-  ws := TWebsockPackManager.Create;
 
-  SetLength(arr, 20);
-
-  arr[0] := 129;
-  arr[1] := 0;                         //2
-
-  arr[2] := 193;                       //2
-  arr[3] := 0;
-
-  arr[4] := 225;                       //3
-  arr[5] := 1;
-  arr[6] := 1;
-
-  arr[7] := 241;                       //3
-  arr[8] := 1;
-  arr[9] := 1;
-
-  arr[10] := 129;
-  arr[11] := 0;
-
-  arr[12] := 129;                         //2
-  arr[13] := 6;                       //2
-  ws.InsertData(arr, 14);
-  arr[0] := 1;
-  ws.InsertData(arr, 1);
-  arr[0] := 2;                       //3
-  ws.InsertData(arr, 1);
-  arr[0] := 3;
-  arr[1] := 4;
-  ws.InsertData(arr, 2);
-  arr[0] := 5;                       //3
-  arr[1] := 6;
-  ws.InsertData(arr, 2);
-
-  while ws.Count > 0 do
-  begin
-    mem := ws.Pop;
-    i := mem.Size;
-    mem.Free;
-  end;
-  // work with mem
-  //FreeAndNil(mem);
-
-  ws.Free;
-
-end;
 
 procedure TForm1.Edit2Change(Sender: TObject);
 begin
@@ -176,7 +121,7 @@ begin
       TsyConnectedClient(val.Sender).SendMessageFrame(val.Message);
       Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Message Len ' + IntToStr(length(val.Message)));
       //      Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Message Len ' + val.Message);
-      TsyConnectedClient(val.Sender).SendCloseFrame(1000, '');
+      //      TsyConnectedClient(val.Sender).SendCloseFrame(1000, '');
     end;
   end;
   // Verifying that the main thread does not stop the worker thread
@@ -213,9 +158,9 @@ begin
   while FWebSocket.MessageQueue.TotalItemsPushed <> FWebSocket.MessageQueue.TotalItemsPopped do
   begin
     FWebSocket.MessageQueue.PopItemTimeout(val, 100);
-    if val.Opcode = optCloseConnect then
+    if val.Opcode = optPing then
     begin
-      Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Close Len ' + IntToStr(length(val.Message)));
+      Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Ping Len ' + IntToStr(length(val.Message)));
     end;
   end;
 end;
