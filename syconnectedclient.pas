@@ -183,7 +183,7 @@ begin
                 Exit;
               end;
 
-              if ((wsMessage.OpCode >optBinary) and (wsMessage.OpCode < optCloseConnect)) or (wsMessage.OpCode > optPong) then
+              if ((wsMessage.OpCode > optBinary) and (wsMessage.OpCode < optCloseConnect)) or (wsMessage.OpCode > optPong) then
               begin
                 SendCloseFrame(1002, '');
                 Exit;
@@ -205,6 +205,9 @@ begin
                     SendCloseFrame(1002, '');
                     exit;
                   end;
+                  if not wsMessage.Fin then
+                    exit;
+
                   if Assigned(OnClientPing) then
                   begin
                     SendPong(wsMessage.MessageStr);
