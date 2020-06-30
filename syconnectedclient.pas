@@ -15,7 +15,7 @@ type
 
   TOnClientTextMessage = procedure(Sender: TObject; Message: string) of object;
   TOnClientCloseConnect = procedure(Sender: TObject; Reason: integer; Message: string) of object;
-  //  TOnClientBinaryMessage = procedure(Sender: TObject; BinData: TDynamicByteArray) of object;
+  TOnClientBinaryMessage = procedure(Sender: TObject; BinData: TBytes) of object;
 
 
   { TsyConnectedClient }
@@ -29,11 +29,10 @@ type
     FWebSocket: boolean;
     FHandShake: boolean;
     FOnClientTextMessage: TOnClientTextMessage;
-    //    FOnClientBinaryData: TOnClientBinaryMessage;
+    FOnClientBinaryData: TOnClientBinaryMessage;
     FOnClientClose: TOnClientCloseConnect;
     FTag: integer;
     FCookie: string;
-    //FBaseFrame: TBaseFrame;
     FWebsocketFrame: TWebsockPackManager;
     function MyEncodeBase64(sha1: TSHA1Digest): string;
     procedure Execute; override;
@@ -43,8 +42,6 @@ type
     procedure SendHTTPAnswer;
     procedure SendHandShake(ASecWebSocketKey: string);
     function GetWebSocketKey(AHeader: TStringList): string;
-    //    procedure DataProcessing(AWebsocketFrame: TWebsocketFrame);
-
   public
     constructor Create(hSock: TSocket);
     destructor Destroy; override;
@@ -53,11 +50,11 @@ type
     // комманды отправки
     procedure SendCloseFrame(AReason: integer; AMessage: string);
     procedure SendMessageFrame(AMessage: string);
-    //    procedure SendBinaryFrame(ABinData: TDynamicByteArray);
+    procedure SendBinaryFrame(ABinData: TBytes);
     procedure SendPong(AMessage: string);
 
     property OnClientTextMessage: TOnClientTextMessage read FOnClientTextMessage write FOnClientTextMessage;
-    //  property OnClientBinaryData: TOnClientBinaryMessage read FOnClientBinaryData write FOnClientBinaryData;
+    property OnClientBinaryData: TOnClientBinaryMessage read FOnClientBinaryData write FOnClientBinaryData;
     property OnClientClose: TOnClientCloseConnect read FOnClientClose write FOnClientClose;
     property OnClientPing: TOnClientTextMessage read FOnClientPing write FOnClientPing;
     property Tag: integer read FTag write FTag;
@@ -178,11 +175,14 @@ begin
             RcvFrame := FWebsocketFrame.pop;
             wsMessage := TBaseWebsocketMessage.Create;
             wsMessage.Frame := RcvFrame;
-
+            //DataBuffer := wsMessage.Binary;
             case wsMessage.OpCode of
               optText: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
                 if Assigned(OnClientTextMessage) then
                   OnClientTextMessage(Self, wsMessage.MessageStr);
+              optBinary: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
+                if Assigned(OnClientBinaryData) then
+                  OnClientBinaryData(Self, wsMessage.Binary);
             end;
 
             wsMessage.Free;
@@ -401,32 +401,31 @@ begin
   end;
 end;
 
-{procedure TsyConnectedClient.SendBinaryFrame(ABinData: TDynamicByteArray);
+procedure TsyConnectedClient.SendBinaryFrame(ABinData: TBytes);
 var
-  BaseFrame: TBaseFrame;
+  WFrame: TBaseWebsocketMessage;
   len: integer;
-  dt: TDynamicByteArray;
+  dt: TBytes;
 begin
   EnterCriticalsection(FCritSection);
   try
     len := Length(ABinData);
-    BaseFrame := TBaseFrame.Create;
+    WFrame := TBaseWebsocketMessage.Create;
     try
-      BaseFrame.Fin := True;
-      BaseFrame.Opcode := optBinary;
-      BaseFrame.Mask := False;
-      BaseFrame.BinaryData := ABinData;
-      dt := BaseFrame.SendData;
-      len := Length(dt);
-      FSock.SendBuffer(@dt[0], len - 1);
+      WFrame.Fin := True;
+      WFrame.Opcode := optBinary;
+      WFrame.Mask := False;
+
+      WFrame.Binary := ABinData;
+      if FSock.CanWrite(1000) then
+        FSock.SendBuffer(WFrame.Frame.Memory, WFrame.Frame.Size);
     finally
-      FreeAndNil(BaseFrame);
+      FreeAndNil(WFrame);
     end;
   finally
     LeaveCriticalsection(FCritSection);
   end;
 end;
-}
 
 procedure TsyConnectedClient.SendPong(AMessage: string);
 ///var

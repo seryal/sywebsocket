@@ -242,7 +242,7 @@ begin
         Client.OnTerminate := @OnTerminate;
         Client.OnClientTextMessage := @OnClientTextMessage;
         Client.OnClientClose := @OnClientClose;
-        //        Client.OnClientBinaryData := @OnClientBinaryData;
+        Client.OnClientBinaryData := @OnClientBinaryData;
         Client.OnClientPing := @OnClientPing;
         Client.Tag := FClientCount;
         Inc(FClientCount);

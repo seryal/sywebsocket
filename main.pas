@@ -134,7 +134,7 @@ begin
   begin
     mem := ws.Pop;
     i := mem.Size;
-    mem.free;
+    mem.Free;
   end;
   // work with mem
   //FreeAndNil(mem);
@@ -233,8 +233,8 @@ begin
     FWebSocket.MessageQueue.PopItemTimeout(val, 100);
     if val.Opcode = optBinary then
     begin
-      //      TsyConnectedClient(val.Sender).SendBinaryFrame(val.BinaryData);
       Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Bin Length ' + IntToStr(length(val.BinaryData)));
+      TsyConnectedClient(val.Sender).SendBinaryFrame(val.BinaryData);
       TsyConnectedClient(val.Sender).SendCloseFrame(1000, '');
 
     end;

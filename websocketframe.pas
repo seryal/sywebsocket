@@ -32,10 +32,15 @@ type
     FOpCode: TOpcodeType;
     FMask: boolean;
     FPayloadLen: QWord;
+    FHeaderLen: integer;
     FMaskValue: DWord;
     FReason: word;
     FFrame: TMemoryStream;
+    FBinary: TBytes;
+    function GetBinary: TBytes;
     function GetFrame: TMemoryStream;
+    function GetMessageStr: string;
+    procedure SetBinary(AValue: TBytes);
     procedure SetFin(AValue: boolean);
     procedure SetFrame(AValue: TMemoryStream);
     procedure SetMask(AValue: boolean);
@@ -51,8 +56,9 @@ type
     property Mask: boolean read FMask write SetMask;
     property PayloadLen: QWord read FPayloadLen write SetPayloadLen;
     property MaskValue: DWord read FMaskValue write SetMaskValue;
-    property MessageStr: string read FMessageStr write SetMessageStr;
-    property Reason: Word read FReason write FReason;
+    property MessageStr: string read GetMessageStr write SetMessageStr;
+    property Reason: word read FReason write FReason;
+    property Binary: TBytes read GetBinary write SetBinary;
     constructor Create;
     destructor Destroy; override;
   end;
@@ -106,24 +112,40 @@ begin
       pos := 10;
     end;
   end;
-  if FPayloadLen = 0 then
-    exit;
 
-  if FMask then
+  if (FMask) and (FPayloadLen > 0) then
   begin
     move(arr[pos], FMaskValue, 4);
     pos := pos + 4;
+    b := FFrame.Memory + pos;
     for i := 0 to FPayloadLen - 1 do
-      arr[pos + i] := arr[pos + i] xor ((FMaskValue shr ((i mod 4) * 8)) and $FF);
+    begin
+      //      arr[pos + i] := arr[pos + i] xor ((FMaskValue shr ((i mod 4) * 8)) and $FF);
+      b^ := b^ xor ((FMaskValue shr ((i mod 4) * 8)) and $FF);
+      Inc(b);
+    end;
   end;
+
+  FHeaderLen := pos;
+
+
+  {
   case OpCode of
     optText:
     begin
-      SetLength(ustr, FPayloadLen);
-      Move(Arr[pos], ustr[1], FPayloadLen);
-      FMessageStr := ustr;
+      FMessageStr := '';
+      if FPayloadLen > 0 then
+      begin
+        SetLength(ustr, FPayloadLen);
+        Move(Arr[pos], ustr[1], FPayloadLen);
+        FMessageStr := ustr;
+      end;
+    end;
+    optBinary:
+    begin
     end;
   end;
+  }
 end;
 
 procedure TBaseWebsocketMessage.SetMask(AValue: boolean);
@@ -208,6 +230,7 @@ begin
     end;
   end;
   FFrame.Position := fullsize - FPayloadLen;
+  FHeaderLen := fullsize - FPayloadLen;
   if FPayloadLen = 0 then
     exit;
   FPayloadLen := FFrame.Write(ustr[1], FPayloadLen);
@@ -244,6 +267,100 @@ begin
   Result := FFrame;
 end;
 
+function TBaseWebsocketMessage.GetMessageStr: string;
+var
+  ustr: UTF8String;
+begin
+  Result := '';
+  if FPayloadLen > 0 then
+  begin
+    SetLength(ustr, FPayloadLen);
+    FFrame.Position := FHeaderLen;
+    FFrame.ReadBuffer(ustr[1], FPayloadLen);
+    Result := ustr;
+  end;
+end;
+
+function TBaseWebsocketMessage.GetBinary: TBytes;
+begin
+  //  Result := FFrame.Memory + FHeaderLen;
+  SetLength(Result, FPayloadLen);
+  if FPayloadLen > 0 then
+  begin
+    FFrame.Position := FHeaderLen;
+    FFrame.ReadBuffer(Result[0], FPayloadLen);
+    SetLength(Result, FPayloadLen);
+
+  end;
+end;
+
+procedure TBaseWebsocketMessage.SetBinary(AValue: TBytes);
+type
+  THeadBuffer = array[0..13] of byte;
+var
+  Data: TBytes;
+  len16: word;
+  len64: QWord;
+  fullsize: integer;
+  plType: byte;
+  HeadBuffer: ^THeadBuffer;
+  tmp: ^THeadBuffer;
+begin
+  // forming websocket frame for send
+  FPayloadLen := Length(AValue);
+  SetLength(Data, FPayloadLen);
+  if FPayloadLen > 0 then
+    move(AValue[0], Data[0], FPayloadLen);
+  //  len := 2;
+  fullsize := FPayloadLen + 2;
+  pltype := 1;
+  if FPayloadLen > 125 then
+  begin
+    fullsize := fullsize + 2;
+    pltype := 2;
+  end;
+  if FPayloadLen > High(word) then
+  begin
+    fullsize := fullsize + 6;
+    plType := 3;
+  end;
+
+  FFrame.SetSize(fullsize);
+  HeadBuffer := FFrame.Memory;
+  HeadBuffer^[0] := 128;
+  HeadBuffer^[0] := HeadBuffer^[0] or integer(FOpcode);
+  // set mask
+  HeadBuffer^[1] := 0;
+
+  case plType of
+    1:
+    begin
+      HeadBuffer^[1] := HeadBuffer^[1] or FPayloadLen;
+    end;
+    2:
+    begin
+      len16 := FPayloadLen;
+      len16 := SwapEndian(len16);
+      HeadBuffer^[1] := 126;
+      move(len16, HeadBuffer^[2], 2);
+    end;
+    3:
+    begin
+      len64 := FPayloadLen;
+      len64 := SwapEndian(len64);
+      HeadBuffer^[1] := 127;
+      move(len64, HeadBuffer^[2], 8);
+    end;
+  end;
+  FHeaderLen := fullsize - FPayloadLen;
+  FFrame.Position := fullsize - FPayloadLen;
+  if FPayloadLen = 0 then
+    exit;
+  FPayloadLen := FFrame.Write(Data[0], FPayloadLen);
+
+  //  HeadBuffer := FFrame.Memory;
+end;
+
 procedure TBaseWebsocketMessage.SetFin(AValue: boolean);
 begin
   if FFin = AValue then
@@ -253,8 +370,6 @@ end;
 
 
 end.
-
-
 
 
 
