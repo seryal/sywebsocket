@@ -7,10 +7,10 @@ https://github.com/svn2github/Ararat-Synapse/tree/master/trunk
 
 
 ## For Windows:
-Installed openssl, and have also copied the two dll's (libeay32.dll and libssl32.dll) to project directory.
+**TESTED**
 
 ## For Ubuntu:
-sudo apt-get install openssl libssl-dev
+**NOT TESTED**
 
 ## Example
 ```pascal
