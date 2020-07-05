@@ -45,6 +45,8 @@ Page for test https://www.websocket.org/echo.html
 
 
 ## RFC 6455
+[test result](http://syware.ru/html_result/)
+
 Autobahn WebSocket Testsuite v0.8.0/v0.10.9. results. (https://github.com/crossbario/autobahn-testsuite)
 
-[test result](http://syware.ru/html_result/)
+
