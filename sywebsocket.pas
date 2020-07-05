@@ -8,8 +8,8 @@ unit syWebSocket;
 interface
 
 uses
-  httpheader, syconnectedclient, syWebSocketServer, websocketframe, 
-  websocketmessage, websocpackmanager, LazarusPackageIntf;
+  syconnectedclient, syhttpheader, sywebsocketframe, sywebsocketmessage, 
+  sywebsocketpackmanager, syWebSocketServer, LazarusPackageIntf;
 
 implementation
 

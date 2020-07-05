@@ -35,7 +35,6 @@
 |==============================================================================|
 |          (Found at URL: https://github.com/seryal/sywebsocket/)              |
 |==============================================================================}
-
 unit syconnectedclient;
 
 { TODO : Exceptions for errors }
@@ -44,8 +43,8 @@ unit syconnectedclient;
 interface
 
 uses
-  Classes, SysUtils, blcksock, synautil, synsock, ssl_openssl, sha1, base64, websocpackmanager,
-  httpheader, websocketframe, websocketmessage;
+  Classes, SysUtils, blcksock, synautil, synsock, ssl_openssl, sha1, base64, sywebsocketpackmanager,
+  syhttpheader, sywebsocketframe, sywebsocketmessage;
 
 const
   TIMEOUT = 10000;

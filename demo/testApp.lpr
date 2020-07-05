@@ -7,8 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, main, syWebSocketServer, syconnectedclient,
-  httpheader, websocpackmanager, websocketframe, websocketmessage;
+  Forms, main;
 
 {$R *.res}
 

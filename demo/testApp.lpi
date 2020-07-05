@@ -107,18 +107,15 @@
       <FormatVersion Value="2"/>
       <Modes Count="0"/>
     </RunParams>
-    <RequiredPackages Count="3">
+    <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="sparta_generics"/>
+        <PackageName Value="syWebSocket"/>
       </Item1>
       <Item2>
-        <PackageName Value="laz_synapse"/>
-      </Item2>
-      <Item3>
         <PackageName Value="LCL"/>
-      </Item3>
+      </Item2>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="2">
       <Unit0>
         <Filename Value="testApp.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -130,31 +127,6 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit1>
-      <Unit2>
-        <Filename Value="sywebsocketserver.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="syWebSocketServer"/>
-      </Unit2>
-      <Unit3>
-        <Filename Value="syconnectedclient.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit3>
-      <Unit4>
-        <Filename Value="httpheader.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit4>
-      <Unit5>
-        <Filename Value="websocpackmanager.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit5>
-      <Unit6>
-        <Filename Value="websocketframe.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit6>
-      <Unit7>
-        <Filename Value="websocketmessage.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit7>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

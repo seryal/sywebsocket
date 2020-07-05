@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="11"/>
     <BuildModes Active="Debug"/>
-    <Units Count="20">
+    <Units Count="26">
       <Unit0>
         <Filename Value="testApp.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -18,69 +18,60 @@
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <CursorPos X="3" Y="75"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="31"/>
+        <CursorPos X="34" Y="15"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="sywebsocketserver.pas"/>
-        <IsPartOfProject Value="True"/>
         <UnitName Value="syWebSocketServer"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <CursorPos X="85" Y="7"/>
         <UsageCount Value="201"/>
         <Bookmarks Count="2">
           <Item0 Y="250" ID="1"/>
           <Item1 X="33" Y="56" ID="3"/>
         </Bookmarks>
-        <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="syconnectedclient.pas"/>
-        <IsPartOfProject Value="True"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="536"/>
         <CursorPos Y="399"/>
         <UsageCount Value="201"/>
         <Bookmarks Count="1">
           <Item0 Y="235" ID="9"/>
         </Bookmarks>
-        <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="httpheader.pas"/>
-        <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="30" Y="8"/>
         <UsageCount Value="205"/>
       </Unit4>
       <Unit5>
         <Filename Value="websocpackmanager.pas"/>
-        <IsPartOfProject Value="True"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="-1"/>
         <CursorPos X="24" Y="8"/>
         <UsageCount Value="175"/>
-        <Loaded Value="True"/>
       </Unit5>
       <Unit6>
         <Filename Value="websocketframe.pas"/>
-        <IsPartOfProject Value="True"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="-1"/>
         <CursorPos Y="259"/>
         <UsageCount Value="200"/>
         <Bookmarks Count="1">
           <Item0 X="14" Y="13" ID="2"/>
         </Bookmarks>
-        <Loaded Value="True"/>
       </Unit6>
       <Unit7>
         <Filename Value="websocketmessage.pas"/>
-        <IsPartOfProject Value="True"/>
-        <EditorIndex Value="6"/>
+        <EditorIndex Value="-1"/>
         <CursorPos X="29" Y="8"/>
         <UsageCount Value="46"/>
-        <Loaded Value="True"/>
       </Unit7>
       <Unit8>
         <Filename Value="baseframe.pas"/>
@@ -145,10 +136,9 @@
       <Unit16>
         <Filename Value="C:\lazarus\components\lazutils\lazcollections.pas"/>
         <UnitName Value="lazCollections"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="54" Y="15"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit16>
       <Unit17>
         <Filename Value="C:\lazarus\lcl\lclmessageglue.pas"/>
@@ -171,131 +161,81 @@
         <EditorIndex Value="-1"/>
         <UsageCount Value="10"/>
       </Unit19>
+      <Unit20>
+        <Filename Value="..\sywebsocketframe.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="13"/>
+        <CursorPos Y="38"/>
+        <UsageCount Value="10"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="..\sywebsocketmessage.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="13"/>
+        <CursorPos Y="38"/>
+        <UsageCount Value="10"/>
+      </Unit21>
+      <Unit22>
+        <Filename Value="..\sywebsocketpackmanager.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="38"/>
+        <UsageCount Value="10"/>
+      </Unit22>
+      <Unit23>
+        <Filename Value="..\syconnectedclient.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="13"/>
+        <CursorPos Y="38"/>
+        <UsageCount Value="10"/>
+      </Unit23>
+      <Unit24>
+        <Filename Value="..\sywebsocketserver.pas"/>
+        <UnitName Value="syWebSocketServer"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="13"/>
+        <CursorPos Y="38"/>
+        <UsageCount Value="10"/>
+      </Unit24>
+      <Unit25>
+        <Filename Value="..\syhttpheader.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="14"/>
+        <CursorPos X="34" Y="25"/>
+        <UsageCount Value="10"/>
+      </Unit25>
     </Units>
     <OtherDefines Count="1">
       <Define0 Value="DEBUG"/>
     </OtherDefines>
-    <JumpHistory Count="30" HistoryIndex="29">
+    <JumpHistory Count="7" HistoryIndex="6">
       <Position1>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="393" TopLine="380"/>
-      </Position1>
-      <Position2>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="394" TopLine="380"/>
-      </Position2>
-      <Position3>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="396" TopLine="380"/>
-      </Position3>
-      <Position4>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="390" Column="107" TopLine="380"/>
-      </Position4>
-      <Position5>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="393" TopLine="380"/>
-      </Position5>
-      <Position6>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="400" TopLine="380"/>
-      </Position6>
-      <Position7>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="401" TopLine="381"/>
-      </Position7>
-      <Position8>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="403" Column="64" TopLine="393"/>
-      </Position8>
-      <Position9>
-        <Filename Value="syconnectedclient.pas"/>
-        <Caret Line="400" Column="15" TopLine="392"/>
-      </Position9>
-      <Position10>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="54" Column="35" TopLine="35"/>
-      </Position10>
-      <Position11>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="57" Column="102" TopLine="44"/>
-      </Position11>
-      <Position12>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="253" Column="36" TopLine="236"/>
-      </Position12>
-      <Position13>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="243" Column="34" TopLine="236"/>
-      </Position13>
-      <Position14>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="45" Column="16" TopLine="33"/>
-      </Position14>
-      <Position15>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="243" Column="40" TopLine="236"/>
-      </Position15>
-      <Position16>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="45" Column="16" TopLine="34"/>
-      </Position16>
-      <Position17>
         <Filename Value="main.pas"/>
         <Caret Line="52" Column="60" TopLine="31"/>
-      </Position17>
-      <Position18>
+      </Position1>
+      <Position2>
         <Filename Value="main.pas"/>
         <Caret Line="142" Column="3" TopLine="123"/>
-      </Position18>
-      <Position19>
+      </Position2>
+      <Position3>
         <Filename Value="main.pas"/>
         <Caret Line="31" Column="15" TopLine="19"/>
-      </Position19>
-      <Position20>
+      </Position3>
+      <Position4>
         <Filename Value="main.pas"/>
         <Caret Line="52" Column="53" TopLine="34"/>
-      </Position20>
-      <Position21>
+      </Position4>
+      <Position5>
         <Filename Value="main.pas"/>
         <Caret Line="148" Column="77" TopLine="129"/>
-      </Position21>
-      <Position22>
+      </Position5>
+      <Position6>
         <Filename Value="main.pas"/>
         <Caret Line="145" Column="39" TopLine="130"/>
-      </Position22>
-      <Position23>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="8" Column="82"/>
-      </Position23>
-      <Position24>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="72" TopLine="59"/>
-      </Position24>
-      <Position25>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="139" TopLine="126"/>
-      </Position25>
-      <Position26>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="175" TopLine="162"/>
-      </Position26>
-      <Position27>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="19" Column="24"/>
-      </Position27>
-      <Position28>
-        <Filename Value="websocpackmanager.pas"/>
-        <Caret Line="8" Column="46"/>
-      </Position28>
-      <Position29>
-        <Filename Value="websocketmessage.pas"/>
-        <Caret Line="8" Column="40"/>
-      </Position29>
-      <Position30>
-        <Filename Value="sywebsocketserver.pas"/>
-        <Caret Line="7" Column="85"/>
-      </Position30>
+      </Position6>
+      <Position7>
+        <Filename Value="main.pas"/>
+        <Caret Line="6" Column="16"/>
+      </Position7>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>

@@ -2,3 +2,7 @@
 /lib
 /*.dbg
 /*.exe
+/demo/backup
+/demo/lib/x86_64-win64
+/demo/testApp.dbg
+/demo/testApp.exe

@@ -42,7 +42,7 @@ unit syWebSocketServer;
 interface
 
 uses
-  Classes, SysUtils, blcksock, synsock, syconnectedclient, Generics.Collections, lazCollections, websocketframe;
+  Classes, SysUtils, blcksock, synsock, syconnectedclient, Generics.Collections, lazCollections, sywebsocketframe;
 
 type
 

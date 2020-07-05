@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  syWebSocketServer, syconnectedclient, websocketframe, lclintf, websocpackmanager;
+  syWebSocketServer, syconnectedclient, sywebsocketframe, lclintf;
 
 type
 

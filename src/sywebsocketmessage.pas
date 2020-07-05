@@ -35,14 +35,14 @@
 |==============================================================================|
 |          (Found at URL: https://github.com/seryal/sywebsocket/)              |
 |==============================================================================}
-unit websocketmessage;
+unit sywebsocketmessage;
 
 {$mode objfpc}{$H+}
 
 interface
 
 uses
-  Classes, SysUtils, websocketframe;
+  Classes, SysUtils, sywebsocketframe;
 
 type
 

@@ -35,7 +35,7 @@
 |==============================================================================|
 |          (Found at URL: https://github.com/seryal/sywebsocket/)              |
 |==============================================================================}
-unit websocketframe;
+unit sywebsocketframe;
 
 {$mode objfpc}{$H+}
 
