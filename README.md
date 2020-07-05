@@ -2,7 +2,8 @@
 Web Socket Server for Lazarus Applications.
 
 ## Requirements:
-http://www.ararat.cz/synapse/doku.php/download
+https://github.com/svn2github/Ararat-Synapse/tree/master/trunk
+
 
 
 ## For Windows:
@@ -45,4 +46,8 @@ Page for test https://www.websocket.org/echo.html
 
 
 ## RFC 6455
-**html_result** folder contains test report. **html_result/index.html**
+[test result](http://syware.ru/html_result/)
+
+Autobahn WebSocket Testsuite v0.8.0/v0.10.9. results. (https://github.com/crossbario/autobahn-testsuite)
+
+
