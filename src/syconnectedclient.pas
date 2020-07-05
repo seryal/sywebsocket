@@ -43,7 +43,7 @@ unit syconnectedclient;
 interface
 
 uses
-  Classes, SysUtils, blcksock, synautil, synsock, ssl_openssl, sha1, base64, sywebsocketpackmanager,
+  Classes, SysUtils, blcksock, synautil, synsock, sha1, base64, sywebsocketpackmanager,
   syhttpheader, sywebsocketframe, sywebsocketmessage;
 
 const
@@ -189,8 +189,6 @@ end;
 
 function TsyConnectedClient.MyEncodeBase64(sha1: TSHA1Digest): string;
 var
-  i: integer;
-  DecodedStream: TStringStream;
   EncodedStream: TStringStream;
   Encoder: TBase64EncodingStream;
   Output: string;
@@ -470,7 +468,7 @@ begin
                         OnClientTextMessage(Self, wsMessage.MessageStr);
 
                     end;
-                    optBinary: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
+                    optBinary: // if Text then send OnClientTextMessage event to parent Thread about new Binary message;
                       if Assigned(OnClientBinaryData) then
                         OnClientBinaryData(Self, wsMessage.BinData);
                   end;
@@ -495,7 +493,6 @@ end;
 
 constructor TsyConnectedClient.Create(hSock: TSocket);
 begin
-  //  syLog.Info('Start Client Thread');
   InitCriticalSection(FCritSection);
   FTerminateEvent := RTLEventCreate;
   FSock := TTCPBlockSocket.Create;
@@ -568,12 +565,9 @@ end;
 procedure TsyConnectedClient.SendBinaryFrame(ABinData: TBytes);
 var
   WFrame: TsyBaseWebsocketFrame;
-  len: integer;
-  dt: TBytes;
 begin
   EnterCriticalsection(FCritSection);
   try
-    len := Length(ABinData);
     WFrame := TsyBaseWebsocketFrame.Create;
     try
       WFrame.Fin := True;
