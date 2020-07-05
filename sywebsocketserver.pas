@@ -5,7 +5,7 @@ unit syWebSocketServer;
 interface
 
 uses
-  Classes, SysUtils, blcksock, synsock, syconnectedclient, Generics.Collections, sylogevent, lazCollections, websocketframe;
+  Classes, SysUtils, blcksock, synsock, syconnectedclient, Generics.Collections, lazCollections, websocketframe;
 
 type
 
@@ -27,6 +27,8 @@ type
   TsyWebSocketServer = class(TThread)
   private
     FClientCount: integer;
+    FOnClientConnected: TNotifyEvent;
+    FOnClientDisconnected: TNotifyEvent;
     FOnPing: TNotifyEvent;
     FSock: TTCPBlockSocket;
     FPort: integer;
@@ -40,7 +42,7 @@ type
     procedure OnClientClose(Sender: TObject; Reason: integer; Message: string);
     procedure OnClientPing(Sender: TObject; Message: string);
     procedure OnClientTextMessage(Sender: TObject; Message: string);
-    procedure OnTerminate(Sender: TObject);
+    procedure OnClientTerminate(Sender: TObject);
 
     procedure TextMessageNotify;
     procedure CloseConnectionNotify;
@@ -51,6 +53,8 @@ type
     destructor Destroy; override;
     procedure Execute; override;
     property OnMessage: TNotifyEvent read FOnTextMessage write FOnTextMessage;
+    property OnClientConnected: TNotifyEvent read FOnClientConnected write FOnClientConnected;
+    property OnClientDisconnected: TNotifyEvent read FOnClientDisconnected write FOnClientDisconnected;
     property MessageQueue: TMessageQueue read FMessageQueue;
     property LockedClientList: TLockedClientList read FLockedClientList;
   end;
@@ -59,11 +63,12 @@ implementation
 
 { TsyWebSocketServer }
 
-procedure TsyWebSocketServer.OnTerminate(Sender: TObject);
+procedure TsyWebSocketServer.OnClientTerminate(Sender: TObject);
 var
   List: TClientList;
 begin
-  syLog.Info('Client Thread Terminated');
+  if Assigned(OnClientDisconnected) then
+    OnClientDisconnected(Sender);
   if Terminated then
     Exit;
   if not Assigned(FLockedClientList) then
@@ -131,7 +136,6 @@ procedure TsyWebSocketServer.OnClientClose(Sender: TObject; Reason: integer; Mes
 var
   MsgRec: TMessageRecord;
 begin
-  syLog.Info('Mesage About Close: ' + Message);
   // befor Close connect we CAN send message to CLient;
   if not (Sender is TsyConnectedClient) then
     exit;
@@ -168,7 +172,6 @@ procedure TsyWebSocketServer.OnClientBinaryData(Sender: TObject; BinData: TBytes
 var
   MsgRec: TMessageRecord;
 begin
-  syLog.Info('Mesage Binary: ');
   // befor Close connect we CAN send message to CLient;
   if not (Sender is TsyConnectedClient) then
     exit;
@@ -197,7 +200,6 @@ var
   List: specialize TList<TsyConnectedClient>;
   Cl: TsyConnectedClient;
 begin
-  syLog.Info('Main Thread is Terminated');
   list := FLockedClientList.LockList;
   try
     for cl in List do
@@ -236,7 +238,7 @@ begin
       begin
         // create client thread
         Client := TsyConnectedClient.Create(ClientSock);
-        Client.OnTerminate := @OnTerminate;
+        Client.OnTerminate := @OnClientTerminate;
         Client.OnClientTextMessage := @OnClientTextMessage;
         Client.OnClientClose := @OnClientClose;
         Client.OnClientBinaryData := @OnClientBinaryData;
@@ -244,6 +246,8 @@ begin
         Client.Tag := FClientCount;
         Inc(FClientCount);
         FLockedClientList.Add(Client);
+        if Assigned(OnClientConnected) then
+          OnClientConnected(Client);
         Client.Start;
       end;
     end;

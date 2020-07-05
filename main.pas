@@ -28,6 +28,8 @@ type
     procedure Label1Click(Sender: TObject);
   private
     FWebSocket: TsyWebSocketServer;
+    procedure OnClientConected(Sender: TObject);
+    procedure OnClientDisconnected(Sender: TObject);
     procedure OnMessage(Sender: TObject);
   public
 
@@ -47,6 +49,8 @@ begin
   FWebSocket := TsyWebSocketServer.Create(StrToInt(Edit2.Text));
   // Event notifying that there are messages in the queue
   FWebSocket.OnMessage := @OnMessage;
+  FWebSocket.OnClientConnected := @OnClientConected;
+  FWebSocket.OnClientDisconnected := @OnClientDisconnected;
   FWebSocket.Start;
   btnStart.Enabled := False;
   btnStop.Enabled := True;
@@ -132,6 +136,17 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TForm1.OnClientDisconnected(Sender: TObject);
+begin
+  Memo1.Lines.Add('Client Disconnected: ' + IntToStr(TsyConnectedClient(Sender).Tag));
+end;
+
+procedure TForm1.OnClientConected(Sender: TObject);
+begin
+  Memo1.Lines.Add('Client Connected: ' + IntToStr(TsyConnectedClient(Sender).Tag));
+
 end;
 
 

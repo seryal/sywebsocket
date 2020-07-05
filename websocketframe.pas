@@ -7,6 +7,21 @@ interface
 uses
   Classes, SysUtils, blcksock;
 
+const
+  CLOSE_NORMAL_CLOSURE = 1000;
+  CLOSE_GOING_AWAY = 1001;
+  CLOSE_PROTOCOL_ERROR = 1002;
+  CLOSE_UNSUPORTED_DATA = 1003;
+  CLOSE_RESERVER = 1004;
+  CLOSE_NO_STATUS_RCVD = 1005;
+  CLOSE_ABNORMAL_CLOSURE = 1006;
+  CLOSE_INVALID_FRAME_PAYLOAD_DATA = 1007;
+  CLOSE_POLICY_VIOLATION = 1008;
+  CLOSE_MESSAGE_TOO_BIG = 1009;
+  CLOSE_MANDRATORY_EXT = 1010;
+  CLOSE_INTERNAL_SERVER_ERROR = 1011;
+  CLOSE_TLS_HANDSHAKE = 1015;
+
 type
 
   TOpcodeType = (
@@ -17,6 +32,7 @@ type
     optCloseConnect = 8,
     optPing = 9,
     optPong = 10);
+
 
 
 
@@ -131,6 +147,10 @@ begin
   case OpCode of
     optCloseConnect:
     begin
+      if PayloadLen = 0 then
+        FReason := CLOSE_NORMAL_CLOSURE;
+      if PayloadLen = 1 then
+        FReason := CLOSE_PROTOCOL_ERROR;
       if PayloadLen >= 2 then
       begin
         FPayloadLen := FPayloadLen - 2;
@@ -168,7 +188,7 @@ begin
   ///
   ustr := AValue;
   len := length(ustr);
-
+  FPayloadLen := len;
   if opcode = optCloseConnect then
   begin
     SetLength(ustr, len + 2);
@@ -177,6 +197,7 @@ begin
     ustr[2] := chr(FReason and $FF);
     ustr[1] := chr((FReason and $FF00) shr 8);
     len := len + 2;
+    FPayloadLen := FPayloadLen + 2;
   end;
 
   setlength(Buffer, len);

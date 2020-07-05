@@ -361,12 +361,12 @@ begin
                   begin
                     if wsFrame.PayloadLen > 125 then // payload <=125
                     begin
-                      SendCloseFrame(1002, '');
+                      SendCloseFrame(CLOSE_PROTOCOL_ERROR, '');
                       exit;
                     end;
                     if not wsFrame.Fin then   // no fragmentation
                     begin
-                      SendCloseFrame(1002, '');
+                      SendCloseFrame(CLOSE_PROTOCOL_ERROR, '');
                       exit;
                     end;
                     if Assigned(OnClientPing) then
@@ -379,13 +379,32 @@ begin
                   begin
                     if not wsFrame.Fin then   // no fragmentation
                     begin
-                      SendCloseFrame(1002, '');
+                      SendCloseFrame(CLOSE_PROTOCOL_ERROR, '');
                       exit;
                     end;
                   end;
                   optCloseConnect:
                   begin
-                    SendCloseFrame(wsFrame.Reason, wsFrame.MessageStr);
+                    if wsFrame.PayloadLen > 123 then
+                    begin
+                      SendCloseFrame(CLOSE_PROTOCOL_ERROR, '');
+                      Exit;
+                    end;
+                    if wsFrame.PayloadLen > 2 then
+                      if not IsValidUTF8(@wsFrame.Binary[2], wsFrame.PayloadLen - 2) then
+                      begin
+                        SendCloseFrame(CLOSE_INVALID_FRAME_PAYLOAD_DATA, '');
+                        exit;
+                      end;
+                    case wsFrame.Reason of
+                      0..999, CLOSE_RESERVER, CLOSE_NO_STATUS_RCVD, CLOSE_ABNORMAL_CLOSURE, 1012..1014, CLOSE_TLS_HANDSHAKE, 1016..2999:
+                        SendCloseFrame(CLOSE_PROTOCOL_ERROR, '');
+                      else
+                      begin
+                        SendCloseFrame(wsFrame.Reason, wsFrame.MessageStr);
+                      end;
+
+                    end;
                     Exit;
                   end;
 
@@ -407,7 +426,7 @@ begin
                       if wsMessage.PayloadLen > 0 then // check valid UTF-8 string
                         if not IsValidUTF8(@wsMessage.BinData[0], wsMessage.PayloadLen) then
                         begin
-                          SendCloseFrame(1007, '');
+                          SendCloseFrame(CLOSE_INVALID_FRAME_PAYLOAD_DATA, '');
                           exit;
                         end;
                       if Assigned(OnClientTextMessage) then
@@ -566,7 +585,6 @@ end;
 
 
 end.
-
 
 
 
