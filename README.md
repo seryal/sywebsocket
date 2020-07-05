@@ -2,7 +2,8 @@
 Web Socket Server for Lazarus Applications.
 
 ## Requirements:
-http://www.ararat.cz/synapse/doku.php/download
+https://github.com/svn2github/Ararat-Synapse/tree/master/trunk
+
 
 
 ## For Windows:
