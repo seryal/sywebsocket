@@ -11,7 +11,8 @@ Installed openssl, and have also copied the two dll's (libeay32.dll and libssl32
 
 ## For Ubuntu:
 sudo apt-get install openssl libssl-dev
-NOT TESTED
+
+**NOT TESTED**
 
 ## Example
 ```pascal
