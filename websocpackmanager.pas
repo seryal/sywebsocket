@@ -1,3 +1,40 @@
+{==============================================================================|
+| Project : sy WebSocket Server                                                |
+|==============================================================================|
+| Copyright (c)2020, Yuri Serebrennikov                                        |
+| All rights reserved.                                                         |
+|                                                                              |
+| Redistribution and use in source and binary forms, with or without           |
+| modification, are permitted provided that the following conditions are met:  |
+|                                                                              |
+| Redistributions of source code must retain the above copyright notice, this  |
+| list of conditions and the following disclaimer.                             |
+|                                                                              |
+| Redistributions in binary form must reproduce the above copyright notice,    |
+| this list of conditions and the following disclaimer in the documentation    |
+| and/or other materials provided with the distribution.                       |
+|                                                                              |
+| Neither the name of Yuri serebrennikov nor the names of its contributors may |
+| be used to endorse or promote products derived from this software without    |
+| specific prior written permission.                                           |
+|                                                                              |
+| THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"  |
+| AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE    |
+| IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE   |
+| ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR  |
+| ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL       |
+| DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR   |
+| SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER   |
+| CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT           |
+| LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY    |
+| OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH  |
+| DAMAGE.                                                                      |
+|==============================================================================|
+| The Initial Developer of the Original Code is Yuri Serebrennikov             |
+| All Rights Reserved.                                                         |
+|==============================================================================|
+|          (Found at URL: https://github.com/seryal/sywebsocket/)              |
+|==============================================================================}
 unit websocpackmanager;
 
 {$mode objfpc}{$H+}
@@ -14,9 +51,9 @@ type
   PBytes = ^TBytes;
 
   TFrameQueue = class(specialize TQueue<TMemoryStream>);
-  { TWebsockPackManager }
+  { TsyWebsockPackManager }
 
-  TWebsockPackManager = class
+  TsyWebsockPackManager = class
   private
     // размер ожидаемого пакета
     FFrameSize: QWord;
@@ -39,9 +76,9 @@ type
 
 implementation
 
-{ TWebsockPackManager }
+{ TsyWebsockPackManager }
 
-function TWebsockPackManager.GetWebsocketFrameSize(ABuffer: Pointer; ASize: integer): QWord;
+function TsyWebsockPackManager.GetWebsocketFrameSize(ABuffer: Pointer; ASize: integer): QWord;
 var
   HeaderArr: array [0..9] of byte;
   HeaderCount: integer;
@@ -93,30 +130,30 @@ begin
   Result := PayloadLen + HeaderCount;
 end;
 
-function TWebsockPackManager.GetCount: integer;
+function TsyWebsockPackManager.GetCount: integer;
 begin
   Result := FFrameQueue.Count;
 end;
 
-function TWebsockPackManager.GetPop: TMemoryStream;
+function TsyWebsockPackManager.GetPop: TMemoryStream;
 begin
   Result := FFrameQueue.Dequeue;
 end;
 
 
-function TWebsockPackManager.InsertWebsocketFrame(ABuffer: TBytes; Position: integer; Size: integer): integer;
+function TsyWebsockPackManager.InsertWebsocketFrame(ABuffer: TBytes; Position: integer; Size: integer): integer;
 begin
   FWebsocketBuffer.Write(ABuffer[Position], Size);
 end;
 
-constructor TWebsockPackManager.Create;
+constructor TsyWebsockPackManager.Create;
 begin
   FWebsocketBuffer := TMemoryStream.Create;
   FFrameSize := 0;
   FFrameQueue := TFrameQueue.Create;
 end;
 
-destructor TWebsockPackManager.Destroy;
+destructor TsyWebsockPackManager.Destroy;
 var
   mem: TMemoryStream;
   s: integer;
@@ -135,7 +172,7 @@ begin
 end;
 
 
-procedure TWebsockPackManager.InsertData(AData: TBytes; ALen: integer);
+procedure TsyWebsockPackManager.InsertData(AData: TBytes; ALen: integer);
 var
   tmp: integer;
   Mem: Pointer;
