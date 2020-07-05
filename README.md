@@ -43,6 +43,6 @@ end;
 
 Page for test https://www.websocket.org/echo.html
 
-RFC 6455 not fully supported.
 
-In progres...
+## RFC 6455
+**html_result** folder contains test report. **html_result/index.html**
