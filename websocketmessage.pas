@@ -47,7 +47,7 @@ begin
   begin
     FData.Position := 0;
     FData.ReadBuffer(Result[0], len);
-    SetLength(Result, len);
+    //    SetLength(Result, len);
   end;
 end;
 
@@ -61,10 +61,8 @@ begin
   if len > 0 then
   begin
     SetLength(ustr, len);
-    //    FData.Seek(0, soBeginning);
     FData.Position := 0;
     FData.ReadBuffer(ustr[1], len);
-
     Result := ustr;
   end;
 end;
