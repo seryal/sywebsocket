@@ -45,4 +45,6 @@ Page for test https://www.websocket.org/echo.html
 
 
 ## RFC 6455
-**html_result** folder contains test report. **html_result/index.html**
+Autobahn WebSocket Testsuite v0.8.0/v0.10.9. results. (https://github.com/crossbario/autobahn-testsuite)
+
+[test result](http://syware.ru/html_result/)
