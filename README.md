@@ -10,7 +10,7 @@ https://github.com/svn2github/Ararat-Synapse/tree/master/trunk
 **TESTED**
 
 ## For Ubuntu:
-**NOT TESTED**
+**TESTED**
 
 ## Example
 ```pascal
