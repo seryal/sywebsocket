@@ -104,10 +104,11 @@ procedure TsyWebSocketServer.OnClientTerminate(Sender: TObject);
 var
   List: TClientList;
 begin
-  if Assigned(OnClientDisconnected) then
-    OnClientDisconnected(Sender);
+
   if Terminated then
     Exit;
+  if Assigned(OnClientDisconnected) then
+    OnClientDisconnected(Sender);
   if not Assigned(FLockedClientList) then
     exit;
   list := FLockedClientList.LockList;
@@ -265,28 +266,32 @@ begin
   repeat
     if terminated then
       break;
-    if FSock.CanRead(1000) then
-    begin
-      if Terminated then
-        break;
-      ClientSock := FSock.accept;
-
-      if FSock.lastError = 0 then
+    try
+      if FSock.CanRead(1000) then
       begin
-        // create client thread
-        Client := TsyConnectedClient.Create(ClientSock);
-        Client.OnTerminate := @OnClientTerminate;
-        Client.OnClientTextMessage := @OnClientTextMessage;
-        Client.OnClientClose := @OnClientClose;
-        Client.OnClientBinaryData := @OnClientBinaryData;
-        Client.OnClientPing := @OnClientPing;
-        Client.Tag := FClientCount;
-        Inc(FClientCount);
-        FLockedClientList.Add(Client);
-        if Assigned(OnClientConnected) then
-          OnClientConnected(Client);
-        Client.Start;
+        if Terminated then
+          break;
+        ClientSock := FSock.accept;
+
+        if FSock.lastError = 0 then
+        begin
+          // create client thread
+          Client := TsyConnectedClient.Create(ClientSock);
+          Client.OnTerminate := @OnClientTerminate;
+          Client.OnClientTextMessage := @OnClientTextMessage;
+          Client.OnClientClose := @OnClientClose;
+          Client.OnClientBinaryData := @OnClientBinaryData;
+          Client.OnClientPing := @OnClientPing;
+          Client.Tag := FClientCount;
+          Inc(FClientCount);
+          FLockedClientList.Add(Client);
+          if Assigned(OnClientConnected) then
+            OnClientConnected(Client);
+          Client.Start;
+        end;
       end;
+    except
+
     end;
   until False;
   Terminate;
