@@ -169,6 +169,7 @@ begin
     end;
   end;
 
+{ TODO :   // correct? need check mask -> pos+4 -> check payloadlen }
   if (FMask) and (FPayloadLen > 0) then
   begin
     move(arr[pos], FMaskValue, 4);

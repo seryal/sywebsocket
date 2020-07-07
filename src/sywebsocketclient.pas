@@ -5,7 +5,7 @@ unit sywebsocketclient;
 interface
 
 uses
-  Classes, SysUtils, blcksock, base64, sycommon;
+  Classes, SysUtils, blcksock, base64, sycommon, sywebsocketpackmanager, sywebsocketframe;
 
 type
 
@@ -20,6 +20,8 @@ type
     FSock: TTCPBlockSocket;
     FSecKey: string;
     FWebSocket: boolean;
+    FWebsocketFrame: TsyWebsockPackManager;
+
     procedure Execute; override;
     procedure OnStatus(Sender: TObject; Reason: THookSocketReason; const Value: string);
     procedure SendHandshake;
@@ -37,6 +39,11 @@ procedure TsyWebsocketClient.Execute;
 var
   str: string;
   Header: TStringList;
+  DataLen: integer;
+  DataBuffer: TBytes;
+  RcvLen: integer;
+  RcvFrame: TMemoryStream;
+  wsFrame: TsyBaseWebsocketFrame;
 
 begin
   // connect to server
@@ -59,18 +66,54 @@ begin
       exit;
 
     // if websocket server then check Secure-Key
-//    if not CheckSecureKey(Header) then
-//      exit;
+    //    if not CheckSecureKey(Header) then
+    //      exit;
 
 
 
   finally
     FreeAndNil(Header);
   end;
+
+
   str := '';
-  while not Terminated do
-  begin
-    RTLeventWaitFor(FTerminateEvent, 1000);
+  // start websocket protocol
+  try
+    FWebsocketFrame := TsyWebsockPackManager.Create;
+    while not Terminated do
+    begin
+      if FSock.CanRead(1000) then
+      begin
+        DataLen := FSock.WaitingData;
+        if DataLen = 0 then
+          exit;
+        SetLength(DataBuffer, DataLen);
+        RcvLen := FSock.RecvBuffer(@DataBuffer[0], DataLen);
+        if RcvLen <> DataLen then // need raise exception
+          Exit;
+        FWebsocketFrame.InsertData(DataBuffer, RcvLen);
+
+        while FWebsocketFrame.Count > 0 do
+        begin
+          RcvFrame := FWebsocketFrame.Pop;
+          wsFrame := TsyBaseWebsocketFrame.Create;
+          try
+            wsFrame.Frame := RcvFrame;
+            { TODO : i stop here }
+            str := wsFrame.MessageStr;
+            str := '';
+          finally
+            FreeAndNil(wsFrame);
+          end;
+
+        end;
+
+      end;
+      //RTLeventWaitFor(FTerminateEvent, 1000);
+    end;
+
+  finally
+    FreeAndNil(FWebsocketFrame);
   end;
   TerminateThread;
 end;
@@ -130,6 +173,7 @@ begin
 end;
 
 end.
+
 
 
 
