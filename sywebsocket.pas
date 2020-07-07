@@ -9,7 +9,8 @@ interface
 
 uses
   syconnectedclient, syhttpheader, sywebsocketframe, sywebsocketmessage, 
-  sywebsocketpackmanager, syWebSocketServer, LazarusPackageIntf;
+  sywebsocketpackmanager, syWebSocketServer, sywebsocketclient, sycommon, 
+  LazarusPackageIntf;
 
 implementation
 

@@ -44,10 +44,10 @@ interface
 
 uses
   Classes, SysUtils, blcksock, synautil, synsock, sha1, base64, sywebsocketpackmanager,
-  syhttpheader, sywebsocketframe, sywebsocketmessage;
+  syhttpheader, sywebsocketframe, sywebsocketmessage, sycommon;
 
 const
-  TIMEOUT = 10000;
+  TIMEOUT = 5000;
   ANSWER_STRING = 'It''s sy Websocket Server';
 
 type
@@ -76,7 +76,6 @@ type
     function MyEncodeBase64(sha1: TSHA1Digest): string;
     procedure Execute; override;
     procedure OnStatus(Sender: TObject; Reason: THookSocketReason; const Value: string);
-    function IsWebSocketConnect(AHeader: TStringList): boolean;
     procedure SendHTTPAnswer;
     procedure SendHandShake(ASecWebSocketKey: string);
     function GetWebSocketKey(AHeader: TStringList): string;
@@ -264,23 +263,7 @@ begin
   TerminateThread;
 end;
 
-function TsyConnectedClient.IsWebSocketConnect(AHeader: TStringList): boolean;
-var
-  s: string;
-  headerKey, headerValue: string;
-begin
-  Result := False;
-  for s in AHeader do
-  begin
-    headerValue := s;
-    headerKey := Fetch(headerValue, ':');
-    if (LowerCase(headerKey) = 'upgrade') and (LowerCase(headerValue) = 'websocket') then
-    begin
-      Result := True;
-      Exit;
-    end;
-  end;
-end;
+
 
 procedure TsyConnectedClient.SendHTTPAnswer;
 var

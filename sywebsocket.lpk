@@ -12,7 +12,7 @@
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
-    <Files Count="6">
+    <Files Count="8">
       <Item1>
         <Filename Value="src\syconnectedclient.pas"/>
         <UnitName Value="syconnectedclient"/>
@@ -37,6 +37,14 @@
         <Filename Value="src\sywebsocketserver.pas"/>
         <UnitName Value="syWebSocketServer"/>
       </Item6>
+      <Item7>
+        <Filename Value="src\sywebsocketclient.pas"/>
+        <UnitName Value="sywebsocketclient"/>
+      </Item7>
+      <Item8>
+        <Filename Value="src\sycommon.pas"/>
+        <UnitName Value="sycommon"/>
+      </Item8>
     </Files>
     <RequiredPkgs Count="4">
       <Item1>

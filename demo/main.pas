@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  syWebSocketServer, syconnectedclient, sywebsocketframe, lclintf;
+  syWebSocketServer, syconnectedclient, sywebsocketframe, sywebsocketclient, lclintf;
 
 type
 
@@ -16,18 +16,26 @@ type
     btnStart: TButton;
     btnStop: TButton;
     Button1: TButton;
+    btnClientStart: TButton;
+    btnClientStop: TButton;
     Edit1: TEdit;
     Edit2: TEdit;
+    GroupBox1: TGroupBox;
+    GroupBox2: TGroupBox;
     Label1: TLabel;
     Memo1: TMemo;
+    Memo2: TMemo;
+    procedure btnClientStopClick(Sender: TObject);
     procedure btnStartClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+    procedure btnClientStartClick(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure Label1Click(Sender: TObject);
   private
     FWebSocket: TsyWebSocketServer;
+    FwsClient: TsyWebsocketClient;
     procedure OnClientConected(Sender: TObject);
     procedure OnClientDisconnected(Sender: TObject);
     procedure OnMessage(Sender: TObject);
@@ -54,6 +62,16 @@ begin
   FWebSocket.Start;
   btnStart.Enabled := False;
   btnStop.Enabled := True;
+end;
+
+procedure TForm1.btnClientStopClick(Sender: TObject);
+begin
+  if assigned(FwsClient) then
+    FwsClient.TerminateThread;
+  FwsClient := nil;
+  btnClientStop.Enabled := False;
+  btnClientStart.Enabled := True;
+
 end;
 
 procedure TForm1.btnStopClick(Sender: TObject);
@@ -84,6 +102,14 @@ begin
   end;
 end;
 
+procedure TForm1.btnClientStartClick(Sender: TObject);
+begin
+  FwsClient := TsyWebsocketClient.Create('127.0.0.1', 8089);
+  FwsClient.Start;
+  btnClientStart.Enabled := False;
+  btnClientStop.Enabled := True;
+end;
+
 
 
 procedure TForm1.Edit2Change(Sender: TObject);
@@ -93,6 +119,7 @@ end;
 
 procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
+  btnClientStopClick(Sender);
   btnStopClick(Sender);
 end;
 
