@@ -42,7 +42,7 @@ unit sywebsocketframe;
 interface
 
 uses
-  Classes, SysUtils, blcksock;
+  Classes, SysUtils, sywebsocketcommon;
 
 const
   CLOSE_NORMAL_CLOSURE = 1000;
@@ -60,19 +60,6 @@ const
   CLOSE_TLS_HANDSHAKE = 1015;
 
 type
-
-  TOpcodeType = (
-    optContinue = 0,
-    optText = 1,
-    optBinary = 2,
-    { 3..7 - reserved }
-    optCloseConnect = 8,
-    optPing = 9,
-    optPong = 10);
-
-
-
-
   { TsyBaseWebsocketFrame }
 
   TsyBaseWebsocketFrame = class
@@ -169,7 +156,7 @@ begin
     end;
   end;
 
-{ TODO :   // correct? need check mask -> pos+4 -> check payloadlen }
+  { TODO :   // correct? need check mask -> pos+4 -> check payloadlen }
   if (FMask) and (FPayloadLen > 0) then
   begin
     move(arr[pos], FMaskValue, 4);
@@ -311,6 +298,7 @@ var
   plType: byte;
   HeadBuffer: ^THeadBuffer;
   tmp: ^THeadBuffer;
+  i: integer;
 begin
   // forming websocket frame for send
   FPayloadLen := Length(AValue);
@@ -330,38 +318,62 @@ begin
     fullsize := fullsize + 6;
     plType := 3;
   end;
+  if Fmask then
+    fullsize := fullsize + 4;
 
   FFrame.SetSize(fullsize);
+
   HeadBuffer := FFrame.Memory;
   HeadBuffer^[0] := 128;
   HeadBuffer^[0] := HeadBuffer^[0] or integer(FOpcode);
+
   // set mask
-  HeadBuffer^[1] := 0;
+  if Fmask then
+  begin
+    HeadBuffer^[1] := 128;
+    FMaskValue := Random($FFFFFFFF);
+    FMaskValue := 0;
+  end
+  else
+    HeadBuffer^[1] := 0;
+
 
   case plType of
     1:
     begin
       HeadBuffer^[1] := HeadBuffer^[1] or FPayloadLen;
+      move(FMaskValue, HeadBuffer^[2], 4);
     end;
     2:
     begin
       len16 := FPayloadLen;
       len16 := SwapEndian(len16);
-      HeadBuffer^[1] := 126;
+      HeadBuffer^[1] := HeadBuffer^[1] or 126;
       move(len16, HeadBuffer^[2], 2);
+      move(FMaskValue, HeadBuffer^[4], 4);
     end;
     3:
     begin
       len64 := FPayloadLen;
       len64 := SwapEndian(len64);
-      HeadBuffer^[1] := 127;
+      HeadBuffer^[1] := HeadBuffer^[1] or 127;
       move(len64, HeadBuffer^[2], 8);
+      move(FMaskValue, HeadBuffer^[10], 4);
     end;
   end;
   FHeaderLen := fullsize - FPayloadLen;
   FFrame.Position := fullsize - FPayloadLen;
   if FPayloadLen = 0 then
     exit;
+  // encode Payload data
+  if mask then
+  begin
+    //FMaskValue := SwapEndian(FMaskValue);
+    for i := 0 to FPayloadLen - 1 do
+      Data[i] := Data[i] xor ((FMaskValue shr ((i mod 4) * 8)) and $FF);
+
+  end;
+
   FPayloadLen := FFrame.Write(Data[0], FPayloadLen);
 
   //  HeadBuffer := FFrame.Memory;

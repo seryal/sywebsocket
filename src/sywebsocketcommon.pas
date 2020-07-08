@@ -1,11 +1,31 @@
-unit sycommon;
+unit sywebsocketcommon;
 
 {$mode objfpc}{$H+}
 
 interface
 
 uses
-  Classes, SysUtils, synautil;
+  Classes, SysUtils, synautil, lazCollections;
+
+type
+    TOpcodeType = (
+    optContinue = 0,
+    optText = 1,
+    optBinary = 2,
+    { 3..7 - reserved }
+    optCloseConnect = 8,
+    optPing = 9,
+    optPong = 10);
+
+  TMessageRecord = record
+    Opcode: TOpcodeType;
+    Reason: integer;
+    Message: string;
+    BinaryData: TBytes;
+    Sender: pointer;
+  end;
+
+  TMessageQueue = specialize TLazThreadedQueue<TMessageRecord>;
 
 function IsWebSocketConnect(AHeader: TStringList): boolean;
 function IsValidUTF8(AValue: PChar; ALen: integer): boolean;

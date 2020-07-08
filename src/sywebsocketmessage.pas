@@ -42,7 +42,7 @@ unit sywebsocketmessage;
 interface
 
 uses
-  Classes, SysUtils, sywebsocketframe;
+  Classes, SysUtils, sywebsocketframe, sywebsocketcommon;
 
 type
 

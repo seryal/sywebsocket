@@ -42,22 +42,14 @@ unit syWebSocketServer;
 interface
 
 uses
-  Classes, SysUtils, blcksock, synsock, syconnectedclient, Generics.Collections, lazCollections, sywebsocketframe;
+  Classes, SysUtils, blcksock, synsock, syconnectedclient, Generics.Collections, sywebsocketcommon;
 
 type
 
   TLockedClientList = class(specialize TThreadList<TsyConnectedClient>);
   TClientList = specialize TList<TsyConnectedClient>;
 
-  TMessageRecord = record
-    Opcode: TOpcodeType;
-    Reason: integer;
-    Message: string;
-    BinaryData: TBytes;
-    Sender: TsyConnectedClient;
-  end;
 
-  TMessageQueue = specialize TLazThreadedQueue<TMessageRecord>;
 
 
   { TsyWebSocketServer }
@@ -94,6 +86,7 @@ type
     property OnClientDisconnected: TNotifyEvent read FOnClientDisconnected write FOnClientDisconnected;
     property MessageQueue: TMessageQueue read FMessageQueue;
     property LockedClientList: TLockedClientList read FLockedClientList;
+    procedure TerminateThread;
   end;
 
 implementation
@@ -276,6 +269,8 @@ begin
         if FSock.lastError = 0 then
         begin
           // create client thread
+          if Terminated then
+            exit;
           Client := TsyConnectedClient.Create(ClientSock);
           Client.OnTerminate := @OnClientTerminate;
           Client.OnClientTextMessage := @OnClientTextMessage;
@@ -294,6 +289,12 @@ begin
 
     end;
   until False;
+  Terminate;
+end;
+
+procedure TsyWebSocketServer.TerminateThread;
+begin
+  FSock.AbortSocket;
   Terminate;
 end;
 

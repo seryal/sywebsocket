@@ -42,8 +42,8 @@
         <UnitName Value="sywebsocketclient"/>
       </Item7>
       <Item8>
-        <Filename Value="src\sycommon.pas"/>
-        <UnitName Value="sycommon"/>
+        <Filename Value="src\sywebsocketcommon.pas"/>
+        <UnitName Value="sywebsocketcommon"/>
       </Item8>
     </Files>
     <RequiredPkgs Count="4">

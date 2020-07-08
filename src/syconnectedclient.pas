@@ -44,7 +44,7 @@ interface
 
 uses
   Classes, SysUtils, blcksock, synautil, synsock, sha1, base64, sywebsocketpackmanager,
-  syhttpheader, sywebsocketframe, sywebsocketmessage, sycommon;
+  syhttpheader, sywebsocketframe, sywebsocketmessage, sywebsocketcommon;
 
 const
   TIMEOUT = 5000;
@@ -510,6 +510,9 @@ end;
 
 procedure TsyConnectedClient.OnStatus(Sender: TObject; Reason: THookSocketReason; const Value: string);
 begin
+  if Terminated then
+    exit;
+
   case Reason of
     HR_Error:
       TerminateThread;

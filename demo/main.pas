@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  syWebSocketServer, syconnectedclient, sywebsocketframe, sywebsocketclient, lclintf;
+  syWebSocketServer, syconnectedclient, sywebsocketframe, sywebsocketclient, lclintf, sywebsocketcommon;
 
 type
 
@@ -18,11 +18,17 @@ type
     Button1: TButton;
     btnClientStart: TButton;
     btnClientStop: TButton;
+    Button2: TButton;
     Edit1: TEdit;
     Edit2: TEdit;
+    Edit3: TEdit;
+    Edit4: TEdit;
+    Edit5: TEdit;
     GroupBox1: TGroupBox;
     GroupBox2: TGroupBox;
     Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
     Memo1: TMemo;
     Memo2: TMemo;
     procedure btnClientStopClick(Sender: TObject);
@@ -30,6 +36,7 @@ type
     procedure btnStopClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure btnClientStartClick(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure Label1Click(Sender: TObject);
@@ -38,6 +45,8 @@ type
     FwsClient: TsyWebsocketClient;
     procedure OnClientConected(Sender: TObject);
     procedure OnClientDisconnected(Sender: TObject);
+    procedure OnClientMessage(Sender: TObject);
+    procedure OnClientTerminate(Sender: TObject);
     procedure OnMessage(Sender: TObject);
   public
 
@@ -78,7 +87,7 @@ procedure TForm1.btnStopClick(Sender: TObject);
 begin
   if Assigned(FWebSocket) then
   begin
-    FWebSocket.Terminate;
+    FWebSocket.TerminateThread;
     FreeAndNil(FWebSocket);
   end;
   btnStop.Enabled := False;
@@ -90,7 +99,10 @@ var
   ClientList: TClientList;
   Client: TsyConnectedClient;
 begin
+  if not Assigned(FWebSocket) then
+    exit;
   ClientList := FWebSocket.LockedClientList.LockList;
+
   try
     for client in ClientList do
     begin
@@ -104,10 +116,17 @@ end;
 
 procedure TForm1.btnClientStartClick(Sender: TObject);
 begin
-  FwsClient := TsyWebsocketClient.Create('127.0.0.1', 8089);
+  FwsClient := TsyWebsocketClient.Create(edit3.Text, StrToInt64Def(Edit4.Text, 8080));
+  FwsClient.OnMessage := @OnClientMessage;
+  FwsClient.OnTerminate := @OnClientTerminate;
   FwsClient.Start;
   btnClientStart.Enabled := False;
   btnClientStop.Enabled := True;
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+  FwsClient.SendMessage(Edit5.Text);
 end;
 
 
@@ -146,7 +165,8 @@ begin
       optText:
       begin
         TsyConnectedClient(val.Sender).SendMessageFrame(val.Message);
-        Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Message Len ' + IntToStr(length(val.Message)));
+        //        Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Message Len ' + IntToStr(length(val.Message)));
+        Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': ' + val.Message);
       end;
       optCloseConnect:
       begin
@@ -168,6 +188,27 @@ end;
 procedure TForm1.OnClientDisconnected(Sender: TObject);
 begin
   Memo1.Lines.Add('Client Disconnected: ' + IntToStr(TsyConnectedClient(Sender).Tag));
+end;
+
+procedure TForm1.OnClientMessage(Sender: TObject);
+var
+  val: TMessageRecord;
+
+begin
+  if not Assigned(FWebSocket) then
+    exit;
+  while FwsClient.MessageQueue.TotalItemsPushed <> FwsClient.MessageQueue.TotalItemsPopped do
+  begin
+    FwsClient.MessageQueue.PopItem(val);
+    Memo2.Lines.Add(val.Message);
+
+  end;
+end;
+
+procedure TForm1.OnClientTerminate(Sender: TObject);
+begin
+  Memo2.Lines.Add('Terminated');
+  btnClientStopClick(self);
 end;
 
 procedure TForm1.OnClientConected(Sender: TObject);

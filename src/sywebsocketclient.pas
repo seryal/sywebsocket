@@ -5,7 +5,7 @@ unit sywebsocketclient;
 interface
 
 uses
-  Classes, SysUtils, blcksock, base64, sycommon, sywebsocketpackmanager, sywebsocketframe;
+  Classes, SysUtils, blcksock, base64, sywebsocketcommon, sywebsocketpackmanager, sywebsocketframe;
 
 type
 
@@ -14,6 +14,7 @@ type
   TsyWebsocketClient = class(TThread)
   private
     FHost: string;
+    FOnMessage: TNotifyEvent;
     FPort: word;
     FCritSection: TRTLCriticalSection;
     FTerminateEvent: PRTLEvent;
@@ -21,13 +22,17 @@ type
     FSecKey: string;
     FWebSocket: boolean;
     FWebsocketFrame: TsyWebsockPackManager;
-
+    FMessageQueue: TMessageQueue;
     procedure Execute; override;
     procedure OnStatus(Sender: TObject; Reason: THookSocketReason; const Value: string);
     procedure SendHandshake;
+    procedure MessageNotify;
   public
     constructor Create(AHost: string; APort: word);
     destructor Destroy; override;
+    property OnMessage: TNotifyEvent read FOnMessage write FOnMessage;
+    property MessageQueue: TMessageQueue read FMessageQueue;
+    procedure SendMessage(AValue: string);
     procedure TerminateThread;
   end;
 
@@ -44,7 +49,7 @@ var
   RcvLen: integer;
   RcvFrame: TMemoryStream;
   wsFrame: TsyBaseWebsocketFrame;
-
+  MsgRec: TMessageRecord;
 begin
   // connect to server
   FSock.Connect(FHost, IntToStr(FPort));
@@ -99,9 +104,13 @@ begin
           wsFrame := TsyBaseWebsocketFrame.Create;
           try
             wsFrame.Frame := RcvFrame;
-            { TODO : i stop here }
-            str := wsFrame.MessageStr;
-            str := '';
+            MsgRec.Opcode := wsFrame.OpCode;
+            MsgRec.Reason := wsFrame.Reason;
+            MsgRec.Sender := self;
+            MsgRec.BinaryData := wsFrame.Binary;
+            MsgRec.Message := wsFrame.MessageStr;
+            FMessageQueue.PushItem(MsgRec);
+            Queue(@MessageNotify);
           finally
             FreeAndNil(wsFrame);
           end;
@@ -144,11 +153,19 @@ begin
   FSock.SendString(str + CRLF);
 end;
 
+procedure TsyWebsocketClient.MessageNotify;
+begin
+  if not Terminated then
+    if Assigned(OnMessage) then
+      OnMessage(Self);
+end;
+
 constructor TsyWebsocketClient.Create(AHost: string; APort: word);
 begin
   FHost := AHost;
   FPort := APort;
   InitCriticalSection(FCritSection);
+  FMessageQueue := TMessageQueue.Create;
   FSock := TTCPBlockSocket.Create;
   FTerminateEvent := RTLEventCreate;
   FreeOnTerminate := True;
@@ -158,17 +175,39 @@ end;
 destructor TsyWebsocketClient.Destroy;
 begin
   RTLeventdestroy(FTerminateEvent);
+  FreeAndNil(FMessageQueue);
   FreeAndNil(FSock);
   DoneCriticalsection(FCritSection);
   inherited Destroy;
+end;
+
+procedure TsyWebsocketClient.SendMessage(AValue: string);
+var
+  WFrame: TsyBaseWebsocketFrame;
+begin
+  EnterCriticalsection(FCritSection);
+  try
+    WFrame := TsyBaseWebsocketFrame.Create;
+    try
+      WFrame.Opcode := optText;
+      WFrame.Mask := True;
+      WFrame.MessageStr := AValue;
+      if FSock.CanWrite(1000) then
+        FSock.SendBuffer(WFrame.Frame.Memory, WFrame.Frame.Size);
+    finally
+      FreeAndNil(WFrame);
+    end;
+  finally
+    LeaveCriticalsection(FCritSection);
+  end;
 end;
 
 procedure TsyWebsocketClient.TerminateThread;
 begin
   if Terminated then
     exit;
+  FSock.AbortSocket;
   Terminate;
-  FSock.CloseSocket;
   RTLeventSetEvent(FTerminateEvent);
 end;
 
