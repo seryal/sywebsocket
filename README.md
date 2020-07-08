@@ -1,5 +1,5 @@
 # sywebsocket
-Web Socket Server for Lazarus Applications.
+Web Socket Server and Client for Lazarus Applications.
 
 ## Requirements:
 https://github.com/svn2github/Ararat-Synapse/tree/master/trunk
@@ -46,7 +46,7 @@ Page for test https://www.websocket.org/echo.html
 
 
 ## RFC 6455
-[test result](http://syware.ru/html_result/)
+[Server test result](http://syware.ru/html_result/)
 
 Autobahn WebSocket Testsuite v0.8.0/v0.10.9. results. (https://github.com/crossbario/autobahn-testsuite)
 
