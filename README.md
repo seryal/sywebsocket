@@ -29,8 +29,6 @@ var
 begin
   if not Assigned(FWebSocket) then
     exit;
-  if FWebSocket.MessageQueue.TotalItemsPushed = FWebSocket.MessageQueue.TotalItemsPopped then
-    exit;
   while FWebSocket.MessageQueue.TotalItemsPushed <> FWebSocket.MessageQueue.TotalItemsPopped do
   begin
     FWebSocket.MessageQueue.PopItemTimeout(val, 100);
