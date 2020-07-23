@@ -1,5 +1,5 @@
 # sywebsocket
-Web Socket Server and Client for Lazarus Applications.
+Websocket Server and Client for Lazarus Applications.
 
 ## Requirements:
 https://github.com/svn2github/Ararat-Synapse/tree/master/trunk
