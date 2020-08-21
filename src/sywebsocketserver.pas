@@ -260,7 +260,7 @@ begin
     if terminated then
       break;
     try
-      if FSock.CanRead(1000) then
+      if FSock.CanRead(5000) then
       begin
         if Terminated then
           break;

@@ -259,10 +259,15 @@ begin
       // get data from socket
       if FSock.CanRead(1000) then
       begin
+        if Terminated then
+          break;
         DataLen := FSock.WaitingData;
         if DataLen = 0 then
           exit;
         SetLength(DataBuffer, DataLen);
+        if Terminated then
+          break;
+
         RcvLen := FSock.RecvBuffer(@DataBuffer[0], DataLen);
         if RcvLen <> DataLen then // need raise exception
           Exit;
@@ -415,9 +420,12 @@ procedure TsyConnectedClient.TerminateThread;
 begin
   if Terminated then
     exit;
-  FSock.CloseSocket;
+  if Assigned(FSock) then
+    FSock.CloseSocket;
   Terminate;
+
   RTLeventSetEvent(FTerminateEvent);
+
 end;
 
 procedure TsyConnectedClient.SendCloseFrame(AReason: integer; AMessage: string);
@@ -426,6 +434,8 @@ var
 begin
   EnterCriticalsection(FCritSection);
   try
+    if Terminated then
+      exit;
     WFrame := TsyBaseWebsocketFrame.Create;
     try
       WFrame.Opcode := optCloseConnect;
@@ -449,13 +459,18 @@ var
 begin
   EnterCriticalsection(FCritSection);
   try
+    if Terminated then
+      Exit;
     WFrame := TsyBaseWebsocketFrame.Create;
     try
       WFrame.Opcode := optText;
       WFrame.Mask := False;
       WFrame.MessageStr := AMessage;
-      if FSock.CanWrite(1000) then
-        FSock.SendBuffer(WFrame.Frame.Memory, WFrame.Frame.Size);
+      try
+        if FSock.CanWrite(1000) then
+          FSock.SendBuffer(WFrame.Frame.Memory, WFrame.Frame.Size);
+      except
+      end;
     finally
       FreeAndNil(WFrame);
     end;
@@ -470,6 +485,8 @@ var
 begin
   EnterCriticalsection(FCritSection);
   try
+    if Terminated then
+      Exit;
     WFrame := TsyBaseWebsocketFrame.Create;
     try
       WFrame.Fin := True;
@@ -493,6 +510,8 @@ var
 begin
   EnterCriticalsection(FCritSection);
   try
+    if Terminated then
+      exit;
     WFrame := TsyBaseWebsocketFrame.Create;
     try
       WFrame.Opcode := optPong;
@@ -515,14 +534,12 @@ begin
 
   case Reason of
     HR_Error:
-      TerminateThread;
+      Terminate;
   end;
 end;
 
 
 end.
-
-
 
 
 

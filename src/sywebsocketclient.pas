@@ -14,6 +14,7 @@ type
   TsyWebsocketClient = class(TThread)
   private
     FHost: string;
+    FOnConnected: TNotifyEvent;
     FOnMessage: TNotifyEvent;
     FPort: word;
     FCritSection: TRTLCriticalSection;
@@ -27,10 +28,12 @@ type
     procedure OnStatus(Sender: TObject; Reason: THookSocketReason; const Value: string);
     procedure SendHandshake;
     procedure MessageNotify;
+    procedure DoConnected;
   public
     constructor Create(AHost: string; APort: word);
     destructor Destroy; override;
     property OnMessage: TNotifyEvent read FOnMessage write FOnMessage;
+    property OnConnected: TNotifyEvent read FOnConnected write FOnConnected;
     property MessageQueue: TMessageQueue read FMessageQueue;
     procedure SendMessage(AValue: string);
     procedure TerminateThread;
@@ -84,6 +87,8 @@ begin
   str := '';
   // start websocket protocol
   try
+    Queue(@DoConnected);
+
     FWebsocketFrame := TsyWebsockPackManager.Create;
     while not Terminated do
     begin
@@ -110,7 +115,7 @@ begin
             MsgRec.BinaryData := wsFrame.Binary;
             MsgRec.Message := wsFrame.MessageStr;
             FMessageQueue.PushItem(MsgRec);
-            Queue(@MessageNotify);
+            Synchronize(@MessageNotify);
           finally
             FreeAndNil(wsFrame);
           end;
@@ -158,6 +163,12 @@ begin
   if not Terminated then
     if Assigned(OnMessage) then
       OnMessage(Self);
+end;
+
+procedure TsyWebsocketClient.DoConnected;
+begin
+  if Assigned(OnConnected) then
+    OnConnected(Self);
 end;
 
 constructor TsyWebsocketClient.Create(AHost: string; APort: word);
