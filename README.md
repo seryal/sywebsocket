@@ -1,5 +1,5 @@
 # sywebsocket
-Web Socket Server and Client for Lazarus Applications.
+Websocket Server and Client for Lazarus Applications.
 
 ## Requirements:
 https://github.com/svn2github/Ararat-Synapse/tree/master/trunk
@@ -28,8 +28,6 @@ var
   val: TMessageRecord;
 begin
   if not Assigned(FWebSocket) then
-    exit;
-  if FWebSocket.MessageQueue.TotalItemsPushed = FWebSocket.MessageQueue.TotalItemsPopped then
     exit;
   while FWebSocket.MessageQueue.TotalItemsPushed <> FWebSocket.MessageQueue.TotalItemsPopped do
   begin
