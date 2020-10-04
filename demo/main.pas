@@ -179,7 +179,8 @@ begin
       optBinary:
       begin
         TsyConnectedClient(val.Sender).SendBinaryFrame(val.BinaryData);
-        Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Bin Length ' + IntToStr(length(val.BinaryData)));
+        Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Bin Length ' +
+          IntToStr(length(val.BinaryData)));
       end;
     end;
   end;
@@ -214,7 +215,7 @@ end;
 procedure TForm1.OnClientConected(Sender: TObject);
 begin
   Memo1.Lines.Add('Client Connected: ' + IntToStr(TsyConnectedClient(Sender).Tag));
-
+  TsyConnectedClient(Sender).SendMessageFrame('Hello');
 end;
 
 

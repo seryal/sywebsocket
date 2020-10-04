@@ -67,6 +67,7 @@ type
     FOnTextMessage: TNotifyEvent;
     FOnBinData: TNotifyEvent;
     FOnCloseConnection: TNotifyEvent;
+    procedure DoClientConnected(Sender: TObject);
     procedure OnClientBinaryData(Sender: TObject; BinData: TBytes);
     procedure OnClientClose(Sender: TObject; Reason: integer; Message: string);
     procedure OnClientPing(Sender: TObject; Message: string);
@@ -215,6 +216,13 @@ begin
   Queue(@BinDataNotify);
 end;
 
+procedure TsyWebSocketServer.DoClientConnected(Sender: TObject);
+begin
+  if Assigned(OnClientConnected) then
+    OnClientConnected(Sender);
+
+end;
+
 constructor TsyWebSocketServer.Create(APort: integer);
 begin
   FreeOnTerminate := False;
@@ -277,11 +285,12 @@ begin
           Client.OnClientClose := @OnClientClose;
           Client.OnClientBinaryData := @OnClientBinaryData;
           Client.OnClientPing := @OnClientPing;
+          Client.OnCLientConnected := @DoClientConnected;
           Client.Tag := FClientCount;
           Inc(FClientCount);
           FLockedClientList.Add(Client);
-          if Assigned(OnClientConnected) then
-            OnClientConnected(Client);
+          //          if Assigned(OnClientConnected) then
+          //            OnClientConnected(Client);
           Client.Start;
         end;
       end;

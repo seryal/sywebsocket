@@ -70,6 +70,7 @@ type
     FOnClientTextMessage: TOnClientTextMessage;
     FOnClientBinaryData: TOnClientBinaryMessage;
     FOnClientClose: TOnClientCloseConnect;
+    FOnClientConnected: TNotifyEvent;
     FTag: integer;
     FCookie: string;
     FWebsocketFrame: TsyWebsockPackManager;
@@ -95,6 +96,7 @@ type
     property OnClientBinaryData: TOnClientBinaryMessage read FOnClientBinaryData write FOnClientBinaryData;
     property OnClientClose: TOnClientCloseConnect read FOnClientClose write FOnClientClose;
     property OnClientPing: TOnClientTextMessage read FOnClientPing write FOnClientPing;
+    property OnCLientConnected: TNotifyEvent read FOnClientConnected write FOnClientConnected;
     property Tag: integer read FTag write FTag;
   end;
 
@@ -176,6 +178,8 @@ begin
   end;
   if FHandShake then
   begin
+    if Assigned(OnCLientConnected) then
+      OnCLientConnected(Self);
     ProcessData;
   end;
 
@@ -339,7 +343,8 @@ begin
                         exit;
                       end;
                     case wsFrame.Reason of
-                      0..999, CLOSE_RESERVER, CLOSE_NO_STATUS_RCVD, CLOSE_ABNORMAL_CLOSURE, 1012..1014, CLOSE_TLS_HANDSHAKE, 1016..2999:
+                      0..999, CLOSE_RESERVER, CLOSE_NO_STATUS_RCVD, CLOSE_ABNORMAL_CLOSURE,
+                      1012..1014, CLOSE_TLS_HANDSHAKE, 1016..2999:
                         SendCloseFrame(CLOSE_PROTOCOL_ERROR, '');
                       else
                       begin
@@ -540,6 +545,5 @@ end;
 
 
 end.
-
 
 
