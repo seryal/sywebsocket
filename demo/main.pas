@@ -196,7 +196,7 @@ var
   val: TMessageRecord;
 
 begin
-  if not Assigned(FWebSocket) then
+  if not Assigned(FwsClient) then
     exit;
   while FwsClient.MessageQueue.TotalItemsPushed <> FwsClient.MessageQueue.TotalItemsPopped do
   begin
