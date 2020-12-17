@@ -178,7 +178,7 @@ begin
   FMessageQueue.PushItem(MsgRec);
   TsyConnectedClient(Sender).SendCloseFrame(Reason, Message);
   TsyConnectedClient(Sender).TerminateThread;
-  Queue(@CloseConnectionNotify);
+  Synchronize(@CloseConnectionNotify);
 end;
 
 procedure TsyWebSocketServer.OnClientPing(Sender: TObject; Message: string);
@@ -220,7 +220,6 @@ procedure TsyWebSocketServer.DoClientConnected(Sender: TObject);
 begin
   if Assigned(OnClientConnected) then
     OnClientConnected(Sender);
-
 end;
 
 constructor TsyWebSocketServer.Create(APort: integer);
@@ -280,6 +279,7 @@ begin
           if Terminated then
             exit;
           Client := TsyConnectedClient.Create(ClientSock);
+          FLockedClientList.Add(Client);
           Client.OnTerminate := @OnClientTerminate;
           Client.OnClientTextMessage := @OnClientTextMessage;
           Client.OnClientClose := @OnClientClose;
@@ -288,7 +288,6 @@ begin
           Client.OnCLientConnected := @DoClientConnected;
           Client.Tag := FClientCount;
           Inc(FClientCount);
-          FLockedClientList.Add(Client);
           //          if Assigned(OnClientConnected) then
           //            OnClientConnected(Client);
           Client.Start;
@@ -303,7 +302,7 @@ end;
 
 procedure TsyWebSocketServer.TerminateThread;
 begin
-  FSock.AbortSocket;
+  FSock.CloseSocket;
   Terminate;
 end;
 
