@@ -62,6 +62,7 @@ type
     FSock: TTCPBlockSocket;
     FPort: integer;
     FLockedClientList: TLockedClientList;
+    FDisconnectedClient: TLockedClientList;
     // Messages from client
     FMessageQueue: TMessageQueue;
     FOnTextMessage: TNotifyEvent;
@@ -74,6 +75,7 @@ type
     procedure OnClientTextMessage(Sender: TObject; Message: string);
     procedure OnClientTerminate(Sender: TObject);
 
+    procedure ClientConnectNotify;
     procedure TextMessageNotify;
     procedure CloseConnectionNotify;
     procedure BinDataNotify;
@@ -110,6 +112,23 @@ begin
     list.Remove(TsyConnectedClient(Sender));
   finally
     FLockedClientList.UnlockList;
+  end;
+end;
+
+procedure TsyWebSocketServer.ClientConnectNotify;
+var
+  list: specialize TList<TsyConnectedClient>;
+  Cl: TsyConnectedClient;
+begin
+  if not Assigned(OnClientConnected) then
+    exit;
+  list := FDisconnectedClient.LockList;
+  try
+    for cl in List do
+      OnClientConnected(cl);
+    list.Clear;
+  finally
+    FDisconnectedClient.UnlockList;
   end;
 end;
 
@@ -218,8 +237,8 @@ end;
 
 procedure TsyWebSocketServer.DoClientConnected(Sender: TObject);
 begin
-  if Assigned(OnClientConnected) then
-    OnClientConnected(Sender);
+  FDisconnectedClient.Add(TsyConnectedClient(Sender));
+  Queue(@ClientConnectNotify);
 end;
 
 constructor TsyWebSocketServer.Create(APort: integer);
@@ -229,13 +248,14 @@ begin
   FSock := TTCPBlockSocket.Create;
   FMessageQueue := TMessageQueue.Create();
   FLockedClientList := TLockedClientList.Create;
+  FDisconnectedClient := TLockedClientList.Create;
   FClientCount := 1;
   inherited Create(True);
 end;
 
 destructor TsyWebSocketServer.Destroy;
 var
-  List: specialize TList<TsyConnectedClient>;
+  list: specialize TList<TsyConnectedClient>;
   Cl: TsyConnectedClient;
 begin
   list := FLockedClientList.LockList;
@@ -247,9 +267,22 @@ begin
   finally
     FLockedClientList.UnlockList;
   end;
+
+  list := FDisconnectedClient.LockList;
+  try
+    for cl in List do
+    begin
+      cl.TerminateThread;
+    end;
+  finally
+    FDisconnectedClient.UnlockList;
+  end;
+
+
   //  FLockedClientList.Clear;
   FreeAndNil(FMessageQueue);
   FreeAndNil(FLockedClientList);
+  FreeAndNil(FDisconnectedClient);
   FreeAndNil(FSock);
   inherited Destroy;
 end;
@@ -285,7 +318,7 @@ begin
           Client.OnClientClose := @OnClientClose;
           Client.OnClientBinaryData := @OnClientBinaryData;
           Client.OnClientPing := @OnClientPing;
-          Client.OnCLientConnected := @DoClientConnected;
+          Client.OnClientConnected := @DoClientConnected;
           Client.Tag := FClientCount;
           Inc(FClientCount);
           //          if Assigned(OnClientConnected) then

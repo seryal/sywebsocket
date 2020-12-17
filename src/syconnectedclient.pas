@@ -96,7 +96,7 @@ type
     property OnClientBinaryData: TOnClientBinaryMessage read FOnClientBinaryData write FOnClientBinaryData;
     property OnClientClose: TOnClientCloseConnect read FOnClientClose write FOnClientClose;
     property OnClientPing: TOnClientTextMessage read FOnClientPing write FOnClientPing;
-    property OnCLientConnected: TNotifyEvent read FOnClientConnected write FOnClientConnected;
+    property OnClientConnected: TNotifyEvent read FOnClientConnected write FOnClientConnected;
     property Tag: integer read FTag write FTag;
   end;
 
@@ -178,8 +178,8 @@ begin
   end;
   if FHandShake then
   begin
-    if Assigned(OnCLientConnected) then
-      OnCLientConnected(Self);
+    if Assigned(OnClientConnected) then
+      OnClientConnected(Self);
     ProcessData;
   end;
 
