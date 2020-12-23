@@ -55,6 +55,7 @@ type
   { TsyWebSocketServer }
   TsyWebSocketServer = class(TThread)
   private
+    FCritSection: TRTLCriticalSection;
     FClientCount: integer;
     FOnClientConnected: TNotifyEvent;
     FOnClientDisconnected: TNotifyEvent;
@@ -69,11 +70,11 @@ type
     FOnBinData: TNotifyEvent;
     FOnCloseConnection: TNotifyEvent;
     procedure DoClientConnected(Sender: TObject);
-    procedure OnClientBinaryData(Sender: TObject; BinData: TBytes);
-    procedure OnClientClose(Sender: TObject; Reason: integer; Message: string);
-    procedure OnClientPing(Sender: TObject; Message: string);
-    procedure OnClientTextMessage(Sender: TObject; Message: string);
-    procedure OnClientTerminate(Sender: TObject);
+    procedure DoClientBinaryData(Sender: TObject; BinData: TBytes);
+    procedure DoClientClose(Sender: TObject; Reason: integer; Message: string);
+    procedure DoClientPing(Sender: TObject; Message: string);
+    procedure DoClientTextMessage(Sender: TObject; Message: string);
+    procedure DoClientTerminate(Sender: TObject);
 
     procedure ClientConnectNotify;
     procedure TextMessageNotify;
@@ -96,22 +97,26 @@ implementation
 
 { TsyWebSocketServer }
 
-procedure TsyWebSocketServer.OnClientTerminate(Sender: TObject);
+procedure TsyWebSocketServer.DoClientTerminate(Sender: TObject);
 var
   List: TClientList;
 begin
-
-  if Terminated then
-    Exit;
-  if Assigned(OnClientDisconnected) then
-    OnClientDisconnected(Sender);
-  if not Assigned(FLockedClientList) then
-    exit;
-  list := FLockedClientList.LockList;
+  EnterCriticalSection(FCritSection);
   try
-    list.Remove(TsyConnectedClient(Sender));
+    if Terminated then
+      Exit;
+    if Assigned(OnClientDisconnected) then
+      OnClientDisconnected(Sender);
+    if not Assigned(FLockedClientList) then
+      exit;
+    list := FLockedClientList.LockList;
+    try
+      list.Remove(TsyConnectedClient(Sender));
+    finally
+      FLockedClientList.UnlockList;
+    end;
   finally
-    FLockedClientList.UnlockList;
+    LeaveCriticalSection(FCritSection);
   end;
 end;
 
@@ -154,7 +159,6 @@ begin
     exit;
   if Assigned(OnMessage) then
     OnMessage(self);
-
 end;
 
 procedure TsyWebSocketServer.PingMessageNotify;
@@ -165,84 +169,110 @@ begin
     OnMessage(self);
 end;
 
-procedure TsyWebSocketServer.OnClientTextMessage(Sender: TObject; Message: string);
+procedure TsyWebSocketServer.DoClientTextMessage(Sender: TObject; Message: string);
 var
   MsgRec: TMessageRecord;
 begin
-  // add message to Queue
-  if not (Sender is TsyConnectedClient) then
-    exit;
-  MsgRec.Message := Message;
-  MsgRec.Sender := TsyConnectedClient(Sender);
-  MsgRec.Opcode := optText;
-  MsgRec.Reason := 0;
-  FMessageQueue.PushItem(MsgRec);
+  EnterCriticalSection(FCritSection);
+  try
+    // add message to Queue
+    if not (Sender is TsyConnectedClient) then
+      exit;
+    MsgRec.Message := Message;
+    MsgRec.Sender := TsyConnectedClient(Sender);
+    MsgRec.Opcode := optText;
+    MsgRec.Reason := 0;
+    FMessageQueue.PushItem(MsgRec);
 
-  // send event to MainProgram about new Text Message
-  // The client must read the data from the queue FMessageQueue;
-  Queue(@TextMessageNotify);
+    // send event to MainProgram about new Text Message
+    // The client must read the data from the queue FMessageQueue;
+    TextMessageNotify;
+  finally
+    LeaveCriticalSection(FCritSection);
+  end;
 end;
 
-procedure TsyWebSocketServer.OnClientClose(Sender: TObject; Reason: integer; Message: string);
+procedure TsyWebSocketServer.DoClientClose(Sender: TObject; Reason: integer; Message: string);
 var
   MsgRec: TMessageRecord;
 begin
-  // befor Close connect we CAN send message to CLient;
-  if not (Sender is TsyConnectedClient) then
-    exit;
-  MsgRec.Message := Message;
-  MsgRec.Sender := TsyConnectedClient(Sender);
-  MsgRec.Opcode := optCloseConnect;
-  MsgRec.Reason := Reason;
-  FMessageQueue.PushItem(MsgRec);
-  TsyConnectedClient(Sender).SendCloseFrame(Reason, Message);
-  TsyConnectedClient(Sender).TerminateThread;
-  Synchronize(@CloseConnectionNotify);
+  EnterCriticalSection(FCritSection);
+  try
+    // befor Close connect we CAN send message to CLient;
+    if not (Sender is TsyConnectedClient) then
+      exit;
+    MsgRec.Message := Message;
+    MsgRec.Sender := TsyConnectedClient(Sender);
+    MsgRec.Opcode := optCloseConnect;
+    MsgRec.Reason := Reason;
+    FMessageQueue.PushItem(MsgRec);
+    TsyConnectedClient(Sender).SendCloseFrame(Reason, Message);
+    TsyConnectedClient(Sender).TerminateThread;
+    CloseConnectionNotify;
+  finally
+    LeaveCriticalSection(FCritSection);
+  end;
 end;
 
-procedure TsyWebSocketServer.OnClientPing(Sender: TObject; Message: string);
+procedure TsyWebSocketServer.DoClientPing(Sender: TObject; Message: string);
 var
   MsgRec: TMessageRecord;
 begin
-  // add message to Queue
-  if not (Sender is TsyConnectedClient) then
-    exit;
-  MsgRec.Message := Message;
-  MsgRec.Sender := TsyConnectedClient(Sender);
-  MsgRec.Opcode := optPing;
-  MsgRec.Reason := 0;
-  FMessageQueue.PushItem(MsgRec);
+  EnterCriticalSection(FCritSection);
+  try
+    // add message to Queue
+    if not (Sender is TsyConnectedClient) then
+      exit;
+    MsgRec.Message := Message;
+    MsgRec.Sender := TsyConnectedClient(Sender);
+    MsgRec.Opcode := optPing;
+    MsgRec.Reason := 0;
+    FMessageQueue.PushItem(MsgRec);
+    // send event to MainProgram about new Text Message
+    // The client must read the data from the queue FMessageQueue;
+    PingMessageNotify;
 
-  // send event to MainProgram about new Text Message
-  // The client must read the data from the queue FMessageQueue;
-  Queue(@PingMessageNotify);
+  finally
+    LeaveCriticalSection(FCritSection);
+  end;
 end;
 
-procedure TsyWebSocketServer.OnClientBinaryData(Sender: TObject; BinData: TBytes);
+procedure TsyWebSocketServer.DoClientBinaryData(Sender: TObject; BinData: TBytes);
 
 var
   MsgRec: TMessageRecord;
 begin
-  // befor Close connect we CAN send message to CLient;
-  if not (Sender is TsyConnectedClient) then
-    exit;
-  MsgRec.Message := '';
-  MsgRec.BinaryData := BinData;
-  MsgRec.Sender := TsyConnectedClient(Sender);
-  MsgRec.Opcode := optBinary;
-  MsgRec.Reason := 0;
-  FMessageQueue.PushItem(MsgRec);
-  Queue(@BinDataNotify);
+  EnterCriticalSection(FCritSection);
+  try
+    // before Close connect we CAN send message to CLient;
+    if not (Sender is TsyConnectedClient) then
+      exit;
+    MsgRec.Message := '';
+    MsgRec.BinaryData := BinData;
+    MsgRec.Sender := TsyConnectedClient(Sender);
+    MsgRec.Opcode := optBinary;
+    MsgRec.Reason := 0;
+    FMessageQueue.PushItem(MsgRec);
+    BinDataNotify;
+  finally
+    LeaveCriticalSection(FCritSection);
+  end;
 end;
 
 procedure TsyWebSocketServer.DoClientConnected(Sender: TObject);
 begin
-  FDisconnectedClient.Add(TsyConnectedClient(Sender));
-  Queue(@ClientConnectNotify);
+  EnterCriticalSection(FCritSection);
+  try
+    FDisconnectedClient.Add(TsyConnectedClient(Sender));
+    ClientConnectNotify;
+  finally
+    LeaveCriticalSection(FCritSection);
+  end;
 end;
 
 constructor TsyWebSocketServer.Create(APort: integer);
 begin
+  InitCriticalSection(FCritSection);
   FreeOnTerminate := False;
   FPort := APort;
   FSock := TTCPBlockSocket.Create;
@@ -284,6 +314,7 @@ begin
   FreeAndNil(FLockedClientList);
   FreeAndNil(FDisconnectedClient);
   FreeAndNil(FSock);
+  DoneCriticalSection(FCritSection);
   inherited Destroy;
 end;
 
@@ -313,11 +344,11 @@ begin
             exit;
           Client := TsyConnectedClient.Create(ClientSock);
           FLockedClientList.Add(Client);
-          Client.OnTerminate := @OnClientTerminate;
-          Client.OnClientTextMessage := @OnClientTextMessage;
-          Client.OnClientClose := @OnClientClose;
-          Client.OnClientBinaryData := @OnClientBinaryData;
-          Client.OnClientPing := @OnClientPing;
+          Client.OnTerminate := @DoClientTerminate;
+          Client.OnClientTextMessage := @DoClientTextMessage;
+          Client.OnClientClose := @DoClientClose;
+          Client.OnClientBinaryData := @DoClientBinaryData;
+          Client.OnClientPing := @DoClientPing;
           Client.OnClientConnected := @DoClientConnected;
           Client.Tag := FClientCount;
           Inc(FClientCount);

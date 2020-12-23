@@ -87,7 +87,7 @@ begin
   str := '';
   // start websocket protocol
   try
-    Queue(@DoConnected);
+    DoConnected;
 
     FWebsocketFrame := TsyWebsockPackManager.Create;
     while not Terminated do
@@ -115,7 +115,7 @@ begin
             MsgRec.BinaryData := wsFrame.Binary;
             MsgRec.Message := wsFrame.MessageStr;
             FMessageQueue.PushItem(MsgRec);
-            Synchronize(@MessageNotify);
+            MessageNotify;
           finally
             FreeAndNil(wsFrame);
           end;
