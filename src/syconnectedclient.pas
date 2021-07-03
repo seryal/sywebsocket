@@ -53,7 +53,8 @@ const
 type
 
   TOnClientTextMessage = procedure(Sender: TObject; Message: string) of object;
-  TOnClientCloseConnect = procedure(Sender: TObject; Reason: integer; Message: string) of object;
+  TOnClientCloseConnect = procedure(Sender: TObject; Reason: integer;
+    Message: string) of object;
   TOnClientBinaryMessage = procedure(Sender: TObject; BinData: TBytes) of object;
 
 
@@ -63,6 +64,7 @@ type
   private
     FCritSection: TRTLCriticalSection;
     FOnClientPing: TOnClientTextMessage;
+    FOnTerminate: TNotifyEvent;
     FTerminateEvent: PRTLEvent;
     FSock: TTCPBlockSocket;
     FWebSocket: boolean;
@@ -92,11 +94,16 @@ type
     procedure SendBinaryFrame(ABinData: TBytes);
     procedure SendPong(AMessage: string);
 
-    property OnClientTextMessage: TOnClientTextMessage read FOnClientTextMessage write FOnClientTextMessage;
-    property OnClientBinaryData: TOnClientBinaryMessage read FOnClientBinaryData write FOnClientBinaryData;
-    property OnClientClose: TOnClientCloseConnect read FOnClientClose write FOnClientClose;
+    property OnClientTextMessage: TOnClientTextMessage
+      read FOnClientTextMessage write FOnClientTextMessage;
+    property OnClientBinaryData: TOnClientBinaryMessage
+      read FOnClientBinaryData write FOnClientBinaryData;
+    property OnClientClose: TOnClientCloseConnect
+      read FOnClientClose write FOnClientClose;
     property OnClientPing: TOnClientTextMessage read FOnClientPing write FOnClientPing;
-    property OnClientConnected: TNotifyEvent read FOnClientConnected write FOnClientConnected;
+    property OnClientConnected: TNotifyEvent
+      read FOnClientConnected write FOnClientConnected;
+    property OnClientTerminate: TNotifyEvent read FOnTerminate write FOnTerminate;
     property Tag: integer read FTag write FTag;
   end;
 
@@ -136,54 +143,63 @@ var
   Header: TStringList;
 
 begin
-  FSock.OnStatus := @OnStatus;
-  FWebSocket := False;
-  FHandShake := False;
-  s := FSock.RecvString(TIMEOUT);
-
-  if FSock.LastError <> 0 then
-    exit;
-
-  HTTPRec.Parse(s);
-  // if not HTTP request then close connection
-  if HTTPRec.Protocol <> 'HTTP/1.1' then
-    exit;
-
-  // read header
-  Header := TStringList.Create;
   try
-    repeat
-      s := FSock.RecvString(TIMEOUT);
-      Header.Add(s);
-    until s = '';
-    FWebSocket := IsWebSocketConnect(Header);
+    FSock.OnStatus := @OnStatus;
+    FWebSocket := False;
+    FHandShake := False;
+    s := FSock.RecvString(TIMEOUT);
 
-    if FWebSocket then
-    begin
-      if not FHandShake then
-      begin
-        // Handshake with client
-        SendHandShake(GetWebSocketKey(Header));
-        FHandShake := True;
-      end;
-    end
-    else
-    begin
-      // Send Answer to browser
-      SendHTTPAnswer;
+    if FSock.LastError <> 0 then
       exit;
-    end;
-  finally
-    FreeAndNil(Header);
-  end;
-  if FHandShake then
-  begin
-    if Assigned(OnClientConnected) then
-      OnClientConnected(Self);
-    ProcessData;
-  end;
 
-  TerminateThread;
+    HTTPRec.Parse(s);
+    // if not HTTP request then close connection
+    if HTTPRec.Protocol <> 'HTTP/1.1' then
+      exit;
+
+    // read header
+    Header := TStringList.Create;
+    try
+      repeat
+        s := FSock.RecvString(TIMEOUT);
+        Header.Add(s);
+      until s = '';
+      FWebSocket := IsWebSocketConnect(Header);
+
+      if FWebSocket then
+      begin
+        if not FHandShake then
+        begin
+          // Handshake with client
+          SendHandShake(GetWebSocketKey(Header));
+          FHandShake := True;
+        end;
+      end
+      else
+      begin
+        // Send Answer to browser
+        SendHTTPAnswer;
+        exit;
+      end;
+    finally
+      FreeAndNil(Header);
+    end;
+    if FHandShake then
+    begin
+      if Assigned(OnClientConnected) then
+        OnClientConnected(Self);
+      ProcessData;
+    end;
+
+    //    TerminateThread;
+    if Assigned(OnClientTerminate) then
+      OnClientTerminate(Self);
+
+  except
+    //    Log.LogError('Error in client thread', 'TsyConnectedClient.Execute');
+    if Assigned(OnClientTerminate) then
+      OnClientTerminate(Self);
+  end;
 end;
 
 
@@ -292,7 +308,8 @@ begin
               Exit;
             end;
 
-            if ((wsFrame.OpCode > optBinary) and (wsFrame.OpCode < optCloseConnect)) or (wsFrame.OpCode > optPong) then
+            if ((wsFrame.OpCode > optBinary) and (wsFrame.OpCode < optCloseConnect)) or
+              (wsFrame.OpCode > optPong) then
             begin
               SendCloseFrame(1002, '');
               Exit;
@@ -343,7 +360,8 @@ begin
                         exit;
                       end;
                     case wsFrame.Reason of
-                      0..999, CLOSE_RESERVER, CLOSE_NO_STATUS_RCVD, CLOSE_ABNORMAL_CLOSURE,
+                      0..999, CLOSE_RESERVER, CLOSE_NO_STATUS_RCVD,
+                      CLOSE_ABNORMAL_CLOSURE,
                       1012..1014, CLOSE_TLS_HANDSHAKE, 1016..2999:
                         SendCloseFrame(CLOSE_PROTOCOL_ERROR, '');
                       else
@@ -368,10 +386,12 @@ begin
                 if wsMessage.IsReady then
                 begin
                   case wsMessage.MessageType of
-                    optText: // if Text then send OnClientTextMessage event to parent Thread about new Text message;
+                    optText:
+                      // if Text then send OnClientTextMessage event to parent Thread about new Text message;
                     begin
                       if wsMessage.PayloadLen > 0 then // check valid UTF-8 string
-                        if not IsValidUTF8(@wsMessage.BinData[0], wsMessage.PayloadLen) then
+                        if not IsValidUTF8(@wsMessage.BinData[0],
+                          wsMessage.PayloadLen) then
                         begin
                           SendCloseFrame(CLOSE_INVALID_FRAME_PAYLOAD_DATA, '');
                           exit;
@@ -380,7 +400,8 @@ begin
                         OnClientTextMessage(Self, wsMessage.MessageStr);
 
                     end;
-                    optBinary: // if Text then send OnClientTextMessage event to parent Thread about new Binary message;
+                    optBinary:
+                      // if Text then send OnClientTextMessage event to parent Thread about new Binary message;
                       if Assigned(OnClientBinaryData) then
                         OnClientBinaryData(Self, wsMessage.BinData);
                   end;
@@ -406,7 +427,7 @@ end;
 constructor TsyConnectedClient.Create(hSock: TSocket);
 begin
   InitCriticalSection(FCritSection);
-  FTerminateEvent := RTLEventCreate;
+  //  FTerminateEvent := RTLEventCreate;
   FSock := TTCPBlockSocket.Create;
   FSock.Socket := hSock;
   FreeOnTerminate := True;
@@ -416,7 +437,7 @@ end;
 destructor TsyConnectedClient.Destroy;
 begin
   FreeAndNil(FSock);
-  RTLeventdestroy(FTerminateEvent);
+  //  RTLeventdestroy(FTerminateEvent);
   DoneCriticalsection(FCritSection);
   inherited Destroy;
 end;
@@ -425,12 +446,14 @@ procedure TsyConnectedClient.TerminateThread;
 begin
   if Terminated then
     exit;
-  if Assigned(FSock) then
-    FSock.CloseSocket;
+
   Terminate;
+  try
+    if Assigned(FSock) then
+      FSock.CloseSocket;
+  except
 
-  RTLeventSetEvent(FTerminateEvent);
-
+  end;
 end;
 
 procedure TsyConnectedClient.SendCloseFrame(AReason: integer; AMessage: string);
@@ -532,7 +555,8 @@ begin
   end;
 end;
 
-procedure TsyConnectedClient.OnStatus(Sender: TObject; Reason: THookSocketReason; const Value: string);
+procedure TsyConnectedClient.OnStatus(Sender: TObject; Reason: THookSocketReason;
+  const Value: string);
 begin
   if Terminated then
     exit;
@@ -545,5 +569,4 @@ end;
 
 
 end.
-
 

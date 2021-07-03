@@ -42,7 +42,8 @@ unit syWebSocketServer;
 interface
 
 uses
-  Classes, SysUtils, blcksock, synsock, syconnectedclient, Generics.Collections, sywebsocketcommon;
+  Classes, SysUtils, blcksock, synsock, syconnectedclient, Generics.Collections,
+  sywebsocketcommon, sylogevent;
 
 type
 
@@ -77,6 +78,7 @@ type
     procedure DoClientTerminate(Sender: TObject);
 
     procedure ClientConnectNotify;
+    procedure DoStatus(Sender: TObject; Reason: THookSocketReason; const Value: string);
     procedure TextMessageNotify;
     procedure CloseConnectionNotify;
     procedure BinDataNotify;
@@ -101,10 +103,11 @@ procedure TsyWebSocketServer.DoClientTerminate(Sender: TObject);
 var
   List: TClientList;
 begin
+  if Terminated then
+    Exit;
+
   EnterCriticalSection(FCritSection);
   try
-    if Terminated then
-      Exit;
     if Assigned(OnClientDisconnected) then
       OnClientDisconnected(Sender);
     if not Assigned(FLockedClientList) then
@@ -135,6 +138,11 @@ begin
   finally
     FDisconnectedClient.UnlockList;
   end;
+end;
+
+procedure TsyWebSocketServer.DoStatus(Sender: TObject; Reason: THookSocketReason; const Value: string);
+begin
+  syLog.Info('Status - ' + Value);
 end;
 
 procedure TsyWebSocketServer.TextMessageNotify;
@@ -273,7 +281,7 @@ end;
 constructor TsyWebSocketServer.Create(APort: integer);
 begin
   InitCriticalSection(FCritSection);
-  FreeOnTerminate := False;
+  FreeOnTerminate := True;
   FPort := APort;
   FSock := TTCPBlockSocket.Create;
   FMessageQueue := TMessageQueue.Create();
@@ -288,26 +296,32 @@ var
   list: specialize TList<TsyConnectedClient>;
   Cl: TsyConnectedClient;
 begin
-  list := FLockedClientList.LockList;
+  EnterCriticalSection(FCritSection);
   try
-    for cl in List do
-    begin
-      cl.TerminateThread;
+    list := FLockedClientList.LockList;
+    try
+      for cl in List do
+      begin
+        cl.TerminateThread;
+        cl.WaitFor;
+      end;
+    finally
+      FLockedClientList.UnlockList;
     end;
-  finally
-    FLockedClientList.UnlockList;
-  end;
 
-  list := FDisconnectedClient.LockList;
-  try
-    for cl in List do
-    begin
-      cl.TerminateThread;
+    list := FDisconnectedClient.LockList;
+    try
+      for cl in List do
+      begin
+        cl.TerminateThread;
+      end;
+    finally
+      FDisconnectedClient.UnlockList;
     end;
-  finally
-    FDisconnectedClient.UnlockList;
-  end;
 
+  finally
+    LeaveCriticalSection(FCritSection);
+  end;
 
   //  FLockedClientList.Clear;
   FreeAndNil(FMessageQueue);
@@ -323,45 +337,58 @@ var
   ClientSock: TSocket;
   Client: TsyConnectedClient;
 begin
-  FSock.CreateSocket;
-  FSock.SetLinger(True, 5000);
-  FSock.Bind('0.0.0.0', IntToStr(FPort));
-  FSock.Listen;
-  repeat
-    if terminated then
-      break;
+  while not Terminated do
+  begin
     try
-      if FSock.CanRead(5000) then
-      begin
-        if Terminated then
-          break;
-        ClientSock := FSock.accept;
+      FSock.OnStatus := @DoStatus;
+      FSock.CreateSocket;
+      FSock.SetLinger(True, 5000);
+      FSock.Bind('0.0.0.0', FPort.ToString);
+      //      FSock.Bind('31.211.8.1', FPort.ToString);
+      FSock.Listen;
+      Sylog.Info('2. Start Listen - ' + FPort.ToString + '=' + FSock.GetLocalSinPort.ToString);
+      Sylog.Info('Error - ' + FSock.SocksLastError.ToString);
 
-        if FSock.lastError = 0 then
-        begin
-          // create client thread
-          if Terminated then
-            exit;
-          Client := TsyConnectedClient.Create(ClientSock);
-          FLockedClientList.Add(Client);
-          Client.OnTerminate := @DoClientTerminate;
-          Client.OnClientTextMessage := @DoClientTextMessage;
-          Client.OnClientClose := @DoClientClose;
-          Client.OnClientBinaryData := @DoClientBinaryData;
-          Client.OnClientPing := @DoClientPing;
-          Client.OnClientConnected := @DoClientConnected;
-          Client.Tag := FClientCount;
-          Inc(FClientCount);
-          //          if Assigned(OnClientConnected) then
-          //            OnClientConnected(Client);
-          Client.Start;
-        end;
-      end;
+      if FPort <> FSock.GetLocalSinPort then
+        FSock.CloseSocket
+      else
+        repeat
+          if terminated then
+            break;
+          if FSock.CanRead(5000) then
+          begin
+            if Terminated then
+              break;
+            ClientSock := FSock.accept;
+
+            if FSock.lastError = 0 then
+            begin
+              // create client thread
+              if Terminated then
+                exit;
+              Client := TsyConnectedClient.Create(ClientSock);
+              FLockedClientList.Add(Client);
+              Client.OnClientTerminate := @DoClientTerminate;
+              Client.OnClientTextMessage := @DoClientTextMessage;
+              Client.OnClientClose := @DoClientClose;
+              Client.OnClientBinaryData := @DoClientBinaryData;
+              Client.OnClientPing := @DoClientPing;
+              Client.OnClientConnected := @DoClientConnected;
+              Client.Tag := FClientCount;
+              Inc(FClientCount);
+              //          if Assigned(OnClientConnected) then
+              //            OnClientConnected(Client);
+              Client.Start;
+            end;
+          end;
+        until Terminated;
     except
-
+      on e: Exception do
+        syLog.Error('Error Start Listen thread - ' + e.Message);
     end;
-  until False;
-  Terminate;
+    Sleep(5000);
+  end;
+  //  Terminate;
 end;
 
 procedure TsyWebSocketServer.TerminateThread;
@@ -371,3 +398,10 @@ begin
 end;
 
 end.
+
+
+
+
+
+
+
