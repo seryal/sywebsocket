@@ -5,7 +5,8 @@ unit sywebsocketclient;
 interface
 
 uses
-  Classes, SysUtils, blcksock, base64, sywebsocketcommon, sywebsocketpackmanager, sywebsocketframe;
+  Classes, SysUtils, blcksock, base64, sywebsocketcommon, sywebsocketpackmanager,
+  sywebsocketframe, synautil, ssl_openssl, ssl_openssl_lib;
 
 type
 
@@ -13,10 +14,12 @@ type
 
   TsyWebsocketClient = class(TThread)
   private
+    FUrl: string;
     FHost: string;
+    FPath: string;
     FOnConnected: TNotifyEvent;
     FOnMessage: TNotifyEvent;
-    FPort: word;
+    FPort: string;
     FCritSection: TRTLCriticalSection;
     FTerminateEvent: PRTLEvent;
     FSock: TTCPBlockSocket;
@@ -31,6 +34,7 @@ type
     procedure DoConnected;
   public
     constructor Create(AHost: string; APort: word);
+    constructor Create(AUrl: string);
     destructor Destroy; override;
     property OnMessage: TNotifyEvent read FOnMessage write FOnMessage;
     property OnConnected: TNotifyEvent read FOnConnected write FOnConnected;
@@ -53,9 +57,11 @@ var
   RcvFrame: TMemoryStream;
   wsFrame: TsyBaseWebsocketFrame;
   MsgRec: TMessageRecord;
+
 begin
+  // ParseURL();
   // connect to server
-  FSock.Connect(FHost, IntToStr(FPort));
+  FSock.Connect(FHost, FPort);
   FSock.OnStatus := @OnStatus;
   // send HTTP handshake - i'm websocket client
   SendHandshake;
@@ -133,6 +139,8 @@ begin
 end;
 
 procedure TsyWebsocketClient.OnStatus(Sender: TObject; Reason: THookSocketReason; const Value: string);
+var
+  str: string;
 begin
   case Reason of
     HR_Error:
@@ -146,14 +154,17 @@ var
   key: string;
 begin
   Randomize;
-  str := 'GET / HTTP/1.1' + CRLF;
+  str := 'GET ' + FUrl + ' HTTP/1.1' + CRLF;
   str := str + 'Host: ' + FHost + CRLF;
-  str := str + 'Upgrade: websocket' + CRLF;
   str := str + 'Connection: Upgrade' + CRLF;
+  str := str + 'Upgrade: websocket' + CRLF;
+  str := str + 'Pragma: no-cache' + CRLF;
+  str := str + 'Cache-Control: no-cache' + CRLF;
   FSecKey := EncodeStringBase64(IntToHex(Random($7FFFFFFFFFFFFFFF), 16));
   str := str + 'Sec-WebSocket-Key: ' + FSecKey + CRLF;
-  str := str + 'Origin: ' + FHost + CRLF;
-  str := str + 'Sec-WebSocket-Protocol: chat, superchat' + CRLF;
+  str := str + 'Origin: ' + 'http://syware.ru' + CRLF;
+  //  str := str + 'Sec-WebSocket-Protocol: chat, superchat' + CRLF;
+  str := str + 'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits' + CRLF;
   str := str + 'Sec-WebSocket-Version: 13' + CRLF;
   FSock.SendString(str + CRLF);
 end;
@@ -174,13 +185,42 @@ end;
 constructor TsyWebsocketClient.Create(AHost: string; APort: word);
 begin
   FHost := AHost;
-  FPort := APort;
+  FPort := IntToStr(APort);
   InitCriticalSection(FCritSection);
   FMessageQueue := TMessageQueue.Create;
   FSock := TTCPBlockSocket.Create;
   FTerminateEvent := RTLEventCreate;
   FreeOnTerminate := True;
   inherited Create(True);
+end;
+
+constructor TsyWebsocketClient.Create(AUrl: string);
+var
+  host: string;
+  port: string;
+  prof: string;
+  user: string;
+  pass: string;
+  path: string;
+  para: string;
+begin
+  FUrl := AUrl;
+  ParseURL(AUrl, prof, User, pass, host, port, path, para);
+  FPath := path;
+  if prof = 'wss' then
+    port := '443';
+  if prof = 'ws' then
+    port := '80';
+
+  FHost := host;
+  FPort := port;
+  InitCriticalSection(FCritSection);
+  FMessageQueue := TMessageQueue.Create;
+  FSock := TTCPBlockSocket.Create;
+  FTerminateEvent := RTLEventCreate;
+  FreeOnTerminate := True;
+  inherited Create(True);
+
 end;
 
 destructor TsyWebsocketClient.Destroy;
@@ -223,9 +263,3 @@ begin
 end;
 
 end.
-
-
-
-
-
-

@@ -1,13 +1,13 @@
 object Form1: TForm1
-  Left = 1994
+  Left = 605
   Height = 534
-  Top = 216
+  Top = 230
   Width = 663
   Caption = 'Form1'
   ClientHeight = 534
   ClientWidth = 663
   OnClose = FormClose
-  LCLVersion = '2.0.10.0'
+  LCLVersion = '2.0.12.0'
   object GroupBox1: TGroupBox
     Left = 8
     Height = 272
@@ -131,7 +131,7 @@ object Form1: TForm1
       Top = 24
       Width = 200
       TabOrder = 3
-      Text = '127.0.0.1'
+      Text = 'wss://testnet-dex.binance.org/api/ws/$all@allMiniTickers'
     end
     object Label3: TLabel
       Left = 8
@@ -146,6 +146,7 @@ object Form1: TForm1
       Height = 23
       Top = 24
       Width = 80
+      Enabled = False
       TabOrder = 4
       Text = '8089'
     end
