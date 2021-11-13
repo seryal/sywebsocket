@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, blcksock, base64, sywebsocketcommon, sywebsocketpackmanager,
-  sywebsocketframe, synautil, ssl_openssl, ssl_openssl_lib;
+  sywebsocketframe, synsock, synautil, ssl_openssl;
 
 type
 
@@ -17,6 +17,7 @@ type
     FUrl: string;
     FHost: string;
     FPath: string;
+    FProt: string;
     FOnConnected: TNotifyEvent;
     FOnMessage: TNotifyEvent;
     FPort: string;
@@ -57,12 +58,17 @@ var
   RcvFrame: TMemoryStream;
   wsFrame: TsyBaseWebsocketFrame;
   MsgRec: TMessageRecord;
-
+  error: integer;
 begin
   // ParseURL();
   // connect to server
-  FSock.Connect(FHost, FPort);
   FSock.OnStatus := @OnStatus;
+  // fhost := 'google.com';
+  FSock.Connect(FHost, FPort);
+  if FProt = 'wss' then
+    FSock.SSLDoConnect;
+  error := FSock.LastError;
+  str := FSock.GetErrorDescEx;
   // send HTTP handshake - i'm websocket client
   SendHandshake;
   Header := TStringList.Create;
@@ -163,9 +169,10 @@ begin
   FSecKey := EncodeStringBase64(IntToHex(Random($7FFFFFFFFFFFFFFF), 16));
   str := str + 'Sec-WebSocket-Key: ' + FSecKey + CRLF;
   str := str + 'Origin: ' + 'http://syware.ru' + CRLF;
-  //  str := str + 'Sec-WebSocket-Protocol: chat, superchat' + CRLF;
+  str := str + 'Sec-WebSocket-Protocol: chat, superchat' + CRLF;
   str := str + 'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits' + CRLF;
   str := str + 'Sec-WebSocket-Version: 13' + CRLF;
+
   FSock.SendString(str + CRLF);
 end;
 
@@ -198,18 +205,19 @@ constructor TsyWebsocketClient.Create(AUrl: string);
 var
   host: string;
   port: string;
-  prof: string;
+  prot: string;
   user: string;
   pass: string;
   path: string;
   para: string;
 begin
   FUrl := AUrl;
-  ParseURL(AUrl, prof, User, pass, host, port, path, para);
+  ParseURL(AUrl, prot, User, pass, host, port, path, para);
+  FProt := prot;
   FPath := path;
-  if prof = 'wss' then
+  if prot = 'wss' then
     port := '443';
-  if prof = 'ws' then
+  if prot = 'ws' then
     port := '80';
 
   FHost := host;
