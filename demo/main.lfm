@@ -131,7 +131,7 @@ object Form1: TForm1
       Top = 24
       Width = 200
       TabOrder = 3
-      Text = 'wss://testnet-dex.binance.org/api/ws/$all@allMiniTickers'
+      Text = 'wss://demo.piesocket.com/v3/channel_1?api_key=oCdCMcMPQpbvNjUIzqtvF1d2X2okWpDQj4AwARJuAgtjhzKxVEjQU6IdCjwm&notify_self'
     end
     object Label3: TLabel
       Left = 8

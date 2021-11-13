@@ -110,9 +110,10 @@ begin
         if DataLen = 0 then
           exit;
         SetLength(DataBuffer, DataLen);
+        //        str := FSock.RecvString(5000);
         RcvLen := FSock.RecvBuffer(@DataBuffer[0], DataLen);
-        if RcvLen <> DataLen then // need raise exception
-          Exit;
+        //if RcvLen <> DataLen then // need raise exception
+        // Exit;
         FWebsocketFrame.InsertData(DataBuffer, RcvLen);
 
         while FWebsocketFrame.Count > 0 do
@@ -169,10 +170,9 @@ begin
   FSecKey := EncodeStringBase64(IntToHex(Random($7FFFFFFFFFFFFFFF), 16));
   str := str + 'Sec-WebSocket-Key: ' + FSecKey + CRLF;
   str := str + 'Origin: ' + 'http://syware.ru' + CRLF;
-  str := str + 'Sec-WebSocket-Protocol: chat, superchat' + CRLF;
+  //str := str + 'Sec-WebSocket-Protocol: chat, superchat' + CRLF;
   str := str + 'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits' + CRLF;
   str := str + 'Sec-WebSocket-Version: 13' + CRLF;
-
   FSock.SendString(str + CRLF);
 end;
 
