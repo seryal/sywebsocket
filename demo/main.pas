@@ -116,7 +116,8 @@ end;
 
 procedure TForm1.btnClientStartClick(Sender: TObject);
 begin
-  FwsClient := TsyWebsocketClient.Create(edit3.Text, StrToInt64Def(Edit4.Text, 8080));
+  //  FwsClient := TsyWebsocketClient.Create(edit3.Text, StrToInt64Def(Edit4.Text, 8080));
+  FwsClient := TsyWebsocketClient.Create(edit3.Text);
   FwsClient.OnMessage := @OnClientMessage;
   FwsClient.OnTerminate := @OnClientTerminate;
   FwsClient.Start;
@@ -170,11 +171,13 @@ begin
       end;
       optCloseConnect:
       begin
-        Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Close Len ' + IntToStr(length(val.Message)));
+        Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Close Len ' +
+          IntToStr(length(val.Message)));
       end;
       optPing:
       begin
-        Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Ping Len ' + IntToStr(length(val.Message)));
+        Memo1.Lines.Add(IntToStr(TsyConnectedClient(val.Sender).Tag) + ': Ping Len ' +
+          IntToStr(length(val.Message)));
       end;
       optBinary:
       begin
