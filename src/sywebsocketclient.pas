@@ -215,10 +215,13 @@ begin
   ParseURL(AUrl, prot, User, pass, host, port, path, para);
   FProt := prot;
   FPath := path;
-  if prot = 'wss' then
-    port := '443';
-  if prot = 'ws' then
-    port := '80';
+  if port = EmptyStr then
+  begin
+    if prot = 'wss' then
+      port := '443';
+    if prot = 'ws' then
+      port := '80';
+  end;
 
   FHost := host;
   FPort := port;
