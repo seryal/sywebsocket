@@ -65,6 +65,7 @@ begin
   FSock.OnStatus := @OnStatus;
   // fhost := 'google.com';
   FSock.Connect(FHost, FPort);
+  error := FSock.SocksLastError;
   if FProt = 'wss' then
     FSock.SSLDoConnect;
   error := FSock.LastError;
@@ -162,7 +163,7 @@ var
 begin
   Randomize;
   str := 'GET ' + FUrl + ' HTTP/1.1' + CRLF;
-  str := str + 'Host: ' + FHost + CRLF;
+  str := str + 'Host: ' + FHost + ':' + FPort + CRLF;
   str := str + 'Connection: Upgrade' + CRLF;
   str := str + 'Upgrade: websocket' + CRLF;
   str := str + 'Pragma: no-cache' + CRLF;
